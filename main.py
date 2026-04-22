@@ -1,17 +1,12 @@
 import streamlit as st
 import pandas as pd
+import os
 
-uploaded_file = st.file_uploader('Puja el teu fitxer de comptes si us plau', type=('csv'))
+homepage = st.Page(os.path.join(os.getcwd(), 'front', 'homepage.py'))
+database = st.Page(os.path.join(os.getcwd(), 'front', 'database.py'))
+cla_tree = st.Page(os.path.join(os.getcwd(), 'front', 'classification_tree.py'))
+add_moves = st.Page(os.path.join(os.getcwd(), 'front', 'add_movements.py'))
+analysis = st.Page(os.path.join(os.getcwd(), 'front', 'analysis.py'))
 
-if uploaded_file is not None:
-    st.write('File uploaded.')
-    df = pd.read_csv(uploaded_file)
-    columns = df.columns.tolist()
-
-    st.header('Show data')
-    st.write(df[[col for col in columns if col!= 'Classificació']])
-
-    st.header('Show classification tree')
-    st.write(df['Classificació'])
-else:
-    st.write('Waiting on file upload...')
+pg = st.navigation([homepage, database, cla_tree, add_moves, analysis])
+pg.run() 
