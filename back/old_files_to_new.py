@@ -50,6 +50,10 @@ def create_comptes_files_new_version(
     df_merge['Classificació'] = df_cla['Classificació 1']
     print('New file\n', df_merge.head())
 
+    # Format it
+    df_merge['Nom'] = df_merge['Nom'].map(str.upper)
+    df_merge['Import'] = df_merge['Import'].map(lambda x: float(x))
+
     # Save it
     df_merge.to_csv(save_to_path, index=False)
 
@@ -60,7 +64,7 @@ def create_comptes_files_new_version(
 classification_path = os.path.join(os.getcwd(), 'data', 'old_comptes_files', 'classification.csv')
 movements_path = os.path.join(os.getcwd(), 'data', 'old_comptes_files', 'movements.csv')
 classification_tree_path = os.path.join(os.getcwd(), 'data', 'old_comptes_files', 'classificacio1.csv')
-save_to_path = os.path.join(os.getcwd(), 'data', 'comptes.csv')
+save_to_path = os.path.join(os.getcwd(), 'data', 'comptes_redo.csv')
 
 # Run
 output = create_comptes_files_new_version(

@@ -1,6 +1,10 @@
 import streamlit as st
 import pandas as pd
-from back.new_movements_readers import read_xml_to_df, compare_movements
+from back.new_movements_readers import (
+    read_xml_to_df,
+    compare_movements,
+    manage_controversial_movements
+)
 from back.classify_movements_dialog import classify_movements
 
 db = st.session_state.get('db', False)
@@ -14,7 +18,18 @@ if uploaded_file is None:
     st.stop()
 
 uploaded_movements = read_xml_to_df(uploaded_file)
-new_movements = compare_movements(uploaded_movements, db)
+new, repeated, controversial = compare_movements(uploaded_movements, db)
+
+st.write('new')
+st.write(new)
+st.write('repeated')
+st.write(repeated)
+st.write('controversial')
+st.write(controversial)
+
+if not controversial.empty:
+    manage_controversial_movements(controversial)
+
 
 if st.button('Classifica'):
     classify_movements()
