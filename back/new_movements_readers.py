@@ -3,6 +3,7 @@ import os
 import xml.etree.ElementTree as ET
 from datetime import datetime
 import streamlit as st
+import numpy as np
 
 
 def read_xml_to_df(path):
@@ -86,50 +87,142 @@ def compare_movements(uploaded, db):
 
     # Filter repeated movements (pd.merge like this only returns equal rows)
     df_repeated = pd.merge(uploaded, db)
-    print(df_repeated.columns)
     df_repeated.drop('Classificació', inplace=True, axis=1)
 
-    # Filter contradictory elements (and here only returns different rows)
-    df_contradictory = pd.merge(uploaded, db, how='left_anti')
-    df_contradictory.drop(['Classificació', 'Categories'],
+    # Filter controversial elements (and here only returns different rows)
+    df_controversial = pd.merge(uploaded, db, how='left_anti')
+    df_controversial.drop(['Classificació', 'Categories'],
                           inplace=True, axis=1)
 
-    return df_new, df_repeated, df_contradictory
+    return df_new, df_repeated, df_controversial
 
-@st.dialog("S'han trobat moviments controversials...")
+
+@st.dialog("S'han trobat moviments controversials", dismissible=False)
 def manage_controversial_movements(movements):
     """
     Show all controversial movements (those within db period but new)
     and decide which to classify and which to ignore.
+
+    Flag that we are done with 'manage_controversial' = False.
     """
-    # Initial setup
+    # Starting values
+    n = movements.shape[0]
     if 'controversial_idx' not in st.session_state:
-        current_idx = 0
         st.session_state['controversial_idx'] = 0
+        st.session_state['controversial_keep'] = [None] * n
+
+    # Current status
+    curr_idx = st.session_state['controversial_idx']
+    keep = st.session_state['controversial_keep']
+    curr_state = keep[curr_idx]if curr_idx < n else None
+
+    # Info
+    if st.toggle('Info', key='info_toggle'):
+        _controversial_info()
+
+    # Show movement
+    if curr_idx >= n:
+        _controversial_end_page(movements)
     else:
-        current_idx = st.session_state['controversial_idx']
+        st.write(pd.DataFrame(movements.iloc[curr_idx]).T)
 
-    if 'controversial_keep' not in st.session_state:
-        st.session_state['controversial_keep'] = [False] * movements.shape[0]
-    else:
-        keep = st.session_state['controversial_keep']
+    # Buttons
+    _controversial_buttons(curr_idx, curr_state, n)
+        
+
+def _controversial_end_page(movements):
+    """Last 'page' on the controversial dialog."""
+    _, col, _ = st.columns([1, 6, 1])
+    col.button('Cap més moviment controversial.', width='stretch', type='tertiary')
+
+    # only close if all answered
+    disable_save = any([
+        (item == None) for item in st.session_state['controversial_keep']
+    ])
+
+    # Store selection in session, delete keys and flag out
+    if col.button('Guarda les eleccions', width='stretch', type='primary',
+                    disabled=disable_save):
+        
+        # store only if any want to be kept
+        if any(st.session_state['controversial_keep']):
+            mask = st.session_state['controversial_keep']
+            st.session_state['controversial_select'] = movements[mask]
+
+        del st.session_state['controversial_idx']
+        del st.session_state['controversial_keep']
+
+        # this flag controls if dialog opens
+        st.session_state['manage_controversial'] = False
+        st.rerun()
 
 
+def _controversial_info():
+    """Controversial information shown on dialog."""
+
+    def switch_off_toggle():
+        """Toggle programmatically."""
+        st.session_state['info_toggle'] = False
+
+    st.write('---')
     st.write('Controversials perque són del periode de temps de la base'
-             ' de dades, però són nous moviments. ')
-    st.write('Decideix qué fer amb cadascun.')
+            ' de dades, però són nous moviments. ')
+    _, col, _ = st.columns([1, 3, 1])
+    col.button('Decideix qué fer amb cadascun', on_click=switch_off_toggle,
+                width='stretch')
+    st.write("L'opció elegida serà indicada amb color.")
     st.write('---')
 
-    st.write(movements.iloc[current_idx])
 
-    cols = st.columns(2)
+def _controversial_buttons(curr_idx, curr_state, n):
+    """Set of buttons on controversial dialog."""
+    cols = st.columns([1, 2, 2, 1])
+    main_btn_w = 150
 
-    with cols[0]:
-        if st.button('Ignora'):
-            st.session_state['controversial_idx'] = current_idx + 1
+    with cols[0]:  # left
+        cont_0 = st.container(horizontal_alignment='left')
+        if cont_0.button('<', disabled = curr_idx <= 0):
+            st.session_state['controversial_idx'] = curr_idx - 1
+            st.rerun()
+    
+    with cols[1]:  # ignora
+        cont_1 = st.container(horizontal_alignment='right')
+        if cont_1.button('Ignora',
+                         width=main_btn_w,
+                         disabled = not (0 <= curr_idx <= n-1),
+                         type='primary' if curr_state == False else 'secondary'):
+            st.session_state['controversial_keep'][curr_idx] = False
+            st.session_state['controversial_idx'] = curr_idx + 1
+            st.rerun()
+    
+    with cols[2]:  # per calificar
+        cont_2 = st.container(horizontal_alignment='left')
+        if cont_2.button('Per calificar',
+                         width=main_btn_w,
+                         disabled = not (0 <= curr_idx <= n-1),
+                         type='primary' if curr_state == True else 'secondary'):
+            st.session_state['controversial_keep'][curr_idx] = True
+            st.session_state['controversial_idx'] = curr_idx + 1
+            st.rerun()
+    
+    with cols[3]:  # right
+        cont_3 = st.container(horizontal_alignment='right')
+        if cont_3.button('>', disabled = curr_idx >= n):
+            st.session_state['controversial_idx'] = curr_idx + 1
             st.rerun()
 
-    with cols[1]:
-        if st.button('Per calificar'):
-            st.session_state['controversial_idx'] = current_idx + 1
-            st.rerun()
+
+def add_controversial_to_new(new, selection):
+    """Add selection from controversial to new and sort."""
+    # Add
+    new = pd.concat((new, selection))
+
+    # Sort
+    ref_date = datetime.strptime('05/07/1998', '%d/%m/%Y')
+    new['Seconds'] = new['Data'].map(
+        lambda d: (datetime.strptime(d, '%d/%m/%Y') - ref_date).total_seconds()
+    )
+    new.sort_values('Seconds', ascending=False, inplace=True)
+    new.drop('Seconds', axis=1, inplace=True)
+
+    return new
