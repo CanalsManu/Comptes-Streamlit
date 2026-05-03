@@ -103,7 +103,7 @@ def manage_controversial_movements(movements):
     Show all controversial movements (those within db period but new)
     and decide which to classify and which to ignore.
 
-    Flag that we are done with 'manage_controversial' = False.
+    Flag that we are done setting 'manage_controversial' to False.
     """
     # Starting values
     n = movements.shape[0]
@@ -114,7 +114,7 @@ def manage_controversial_movements(movements):
     # Current status
     curr_idx = st.session_state['controversial_idx']
     keep = st.session_state['controversial_keep']
-    curr_state = keep[curr_idx]if curr_idx < n else None
+    curr_state = keep[curr_idx] if curr_idx < n else None
 
     # Info
     if st.toggle('Info', key='info_toggle'):
@@ -124,7 +124,7 @@ def manage_controversial_movements(movements):
     if curr_idx >= n:
         _controversial_end_page(movements)
     else:
-        st.write(pd.DataFrame(movements.iloc[curr_idx]).T)
+        st.dataframe(pd.DataFrame(movements.iloc[curr_idx]).T, hide_index=True)
 
     # Buttons
     _controversial_buttons(curr_idx, curr_state, n)
@@ -133,7 +133,8 @@ def manage_controversial_movements(movements):
 def _controversial_end_page(movements):
     """Last 'page' on the controversial dialog."""
     _, col, _ = st.columns([1, 6, 1])
-    col.button('Cap més moviment controversial.', width='stretch', type='tertiary')
+    col.button('Cap més moviment controversial.',
+               width='stretch', type='tertiary')
 
     # only close if all answered
     disable_save = any([
@@ -144,11 +145,11 @@ def _controversial_end_page(movements):
     if col.button('Guarda les eleccions', width='stretch', type='primary',
                     disabled=disable_save):
         
-        # store only if any want to be kept
-        if any(st.session_state['controversial_keep']):
-            mask = st.session_state['controversial_keep']
-            st.session_state['controversial_select'] = movements[mask]
+        # Store results
+        mask = st.session_state['controversial_keep']
+        st.session_state['controversial_select'] = movements[mask]
 
+        # Delete auxiliary vairables
         del st.session_state['controversial_idx']
         del st.session_state['controversial_keep']
 

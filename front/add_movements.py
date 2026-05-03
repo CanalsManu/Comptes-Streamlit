@@ -6,41 +6,97 @@ from back.new_movements_readers import (
     manage_controversial_movements,
     add_controversial_to_new
 )
-from back.classify_movements_dialog import classify_movements
+from back.classify_movements_dialog import (
+    classify_movements,
+    show_classification,
+    start_classification
+)
+
+
+# ------------------------------------------------------------------------------
+# INITIAL STATE
+# ------------------------------------------------------------------------------
+
 
 db = st.session_state.get('db', False)
-
 if db is False:
     st.write("Falta el fitxer de comptes, ves a Inici i puja'l.")
     st.stop()
 
-uploaded_file = st.file_uploader('Puja els nous moviments a classificar.', type=('xml'))
+def change_upload_cleanup():
+    st.session_state.pop('controversial_select', 0)
+    st.session_state.pop('manage_controversial', 0)
+    st.session_state.pop('classification', 0)
+
+uploaded_file = st.file_uploader('Puja els nous moviments a classificar.',
+                                 type=('xml'), accept_multiple_files=False,
+                                 on_change=change_upload_cleanup)
 if uploaded_file is None:
     st.stop()
 
+
+# ------------------------------------------------------------------------------
+# READ UPLOAD AND MANAGE CONTROVERSIALS
+# ------------------------------------------------------------------------------
+
+
+# Read
 uploaded_movements = read_xml_to_df(uploaded_file)
 new, repeated, controversial = compare_movements(uploaded_movements, db)
-manage_controversial = st.session_state.get(
-    'manage_controversial', not controversial.empty
-)
 
+# Manage
+# 'manage_controversial' is set in manage_controversial_movements() 
+manage_controversial = st.session_state.get('manage_controversial',
+                                            not controversial.empty)
 if manage_controversial:
     manage_controversial_movements(controversial)
 
+# Update movements
 if 'controversial_select' in st.session_state:
-    newnew = add_controversial_to_new(new, st.session_state['controversial_select'])
+    to_be_clsf = add_controversial_to_new(new,
+                                      st.session_state['controversial_select'])
+else:
+    to_be_clsf = new
 
-st.write('newnew')
-st.write(newnew)
-st.write('new')
-st.write(new)
-st.write('repeated')
-st.write(repeated)
-st.write('controversial')
-st.write(controversial)
-
-if st.button('Classifica'):
-    classify_movements()
-
+# Movements info
 if st.toggle('Mostra els nous moviments.'):
-    st.write(uploaded_movements)
+    st.write('---')
+    st.write('uploaded')
+    st.dataframe(uploaded_movements, hide_index=True)
+    st.write('new')
+    st.dataframe(new, hide_index=True)
+    st.write('repeated')
+    st.dataframe(repeated, hide_index=True)
+    st.write('controversial')
+    st.dataframe(controversial, hide_index=True)
+    if 'controversial_select' in st.session_state:
+        st.write('controversial selection')
+        st.dataframe(st.session_state['controversial_select'], hide_index=True)
+        st.write('to be classified')
+        st.dataframe(to_be_clsf, hide_index=True)
+    st.write('---')
+
+
+# ------------------------------------------------------------------------------
+# CLASSIFICATION
+# -----------------------------------------------------------------------------
+
+
+st.space('small')
+_, col, _ = st.columns([1, 6, 1])
+
+
+if 'classification' not in st.session_state:
+    # use on_click to force rerun
+    col.button('Comença la classificació', width='stretch', type='primary',
+               on_click=start_classification, args=[to_be_clsf])
+
+elif st.session_state['classification']['status'] == 'done':
+    if col.button('Classificació feta! Mostra-la.', width='stretch',
+                  type='tertiary'):
+        show_classification(to_be_clsf)
+
+else:
+    if col.button('Continua la classificació', width='stretch',
+                  type='secondary'):
+        classify_movements(to_be_clsf)
