@@ -28,23 +28,57 @@ def classify_movements(movements):
     # Get current values
     n = movements.shape[0]
     curr_idx = st.session_state['classification']['curr_idx']
+    if 0 <= curr_idx <= n-1:
+        curr_res = st.session_state['classification']['results'][curr_idx]
+    else:
+        curr_res = None
 
-    # Movement info
+    # End page
     if curr_idx >= n:
         st.write('end page.')
+
+    # Movement info
     else:
-        move_cols = st.columns(2)
+        _clsf_movement_info(movements, curr_idx)
 
-        with move_cols[0]:
-            st.write(movements.iloc[curr_idx]['Data'])
+        # Classification info
+        _clsf_show_categories()
+    
+    # Progress info
+    st.progress(curr_idx/n)
 
-        with move_cols[1]:
-            st.write(movements.iloc[curr_idx]['Nom'])
-            st.write(movements.iloc[curr_idx]['Import'])
+    # Navigation buttons
+    _clsf_nav_buttons(curr_idx, n)
 
-        st.write('---')
+    return 
 
-    # Classification info
+
+def _clsf_movement_info(movements, curr_idx):
+    move_cols = st.columns(2)
+
+    with move_cols[0]:
+        st.write(movements.iloc[curr_idx]['Data'])
+
+    with move_cols[1]:
+        st.write(movements.iloc[curr_idx]['Nom'])
+        st.write(movements.iloc[curr_idx]['Import'])
+
+    st.write('---')
+    
+
+def _clsf_show_categories(curr_res):
+    """
+    Show possible categories from clasf tree and choose.
+    
+    - if curr_res is not None: highlight = True and show current choices?
+    - see if import neg or pos
+    - get corresponding categories
+    - upon choosing, store result and show next subcategory
+    - show current choices?
+    - when no more category, show next movement
+    """
+
+
     classification_cols = st.columns(4)
 
     with classification_cols[0]:
@@ -58,12 +92,9 @@ def classify_movements(movements):
 
     with classification_cols[3]:
         st.write('C4')
-    
 
-    # Progress info
-    st.progress(curr_idx/n)
 
-    # Navigation buttons
+def _clsf_nav_buttons(curr_idx, n):
     nav_cols = st.columns([1, 1])
 
     def _go_left():
@@ -78,7 +109,8 @@ def classify_movements(movements):
     cont_right.button('>', disabled = (curr_idx  >= n), on_click = _go_right,
                       type='tertiary')
 
+
 @st.dialog('Classificació feta.')
 def show_classification():
     """Show classification"""
-    st.write(st.session_state['classification']['result'])
+    st.write(st.session_state['classification']['results'])

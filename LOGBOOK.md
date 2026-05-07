@@ -75,3 +75,5 @@ TODO:
 
 07/05/2026
 - Avoid rerunning in controversials
+- Clasf tree from list/series
+- TODO: start with classfication interaction

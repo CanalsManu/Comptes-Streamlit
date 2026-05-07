@@ -73,8 +73,8 @@ if st.toggle('Mostra els nous moviments.'):
     if 'controversial_select' in st.session_state:
         st.write('controversial selection')
         st.dataframe(st.session_state['controversial_select'], hide_index=True)
-        st.write('to be classified')
-        st.dataframe(to_be_clsf, hide_index=True)
+    st.write('to be classified')
+    st.dataframe(to_be_clsf, hide_index=True)
     st.write('---')
 
 
@@ -86,16 +86,23 @@ if st.toggle('Mostra els nous moviments.'):
 st.space('small')
 _, col, _ = st.columns([1, 6, 1])
 
+if to_be_clsf.empty:
+    pass
 
 if 'classification' not in st.session_state:
+    if to_be_clsf.empty:
+        name, disabled = 'Cap moviment nou', True
+    else:
+        name, disabled = 'Comença la classificació', False
+
     # use on_click to force rerun
-    col.button('Comença la classificació', width='stretch', type='primary',
+    col.button(name, width='stretch', type='primary', disabled=disabled,
                on_click=start_classification, args=[to_be_clsf])
 
 elif st.session_state['classification']['status'] == 'done':
     if col.button('Classificació feta! Mostra-la.', width='stretch',
                   type='tertiary'):
-        show_classification(to_be_clsf)
+        show_classification()
 
 else:
     if col.button('Continua la classificació', width='stretch',
