@@ -72,3 +72,6 @@ TODO:
 - TODO: if controversial from movements are managed, and then the file is discarded and a new one uploaded, the controversial window doesn't appear. Bug -> fixed
 - added progress bar, classification movement started
 - NEXT: show appropriate classifications
+
+07/05/2026
+- Avoid rerunning in controversials

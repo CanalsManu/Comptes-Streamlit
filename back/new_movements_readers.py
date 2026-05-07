@@ -137,13 +137,13 @@ def _controversial_end_page(movements):
                width='stretch', type='tertiary')
 
     # only close if all answered
-    disable_save = any([
+    answer_missing = any([
         (item == None) for item in st.session_state['controversial_keep']
     ])
 
     # Store selection in session, delete keys and flag out
     if col.button('Guarda les eleccions', width='stretch', type='primary',
-                    disabled=disable_save):
+                    disabled=answer_missing):
         
         # Store results
         mask = st.session_state['controversial_keep']
@@ -182,37 +182,43 @@ def _controversial_buttons(curr_idx, curr_state, n):
 
     with cols[0]:  # left
         cont_0 = st.container(horizontal_alignment='left')
-        if cont_0.button('<', disabled = curr_idx <= 0):
+        def _go_left():
             st.session_state['controversial_idx'] = curr_idx - 1
-            st.rerun()
+        cont_0.button('<', disabled = curr_idx <= 0, on_click=_go_left)
     
     with cols[1]:  # ignora
         cont_1 = st.container(horizontal_alignment='right')
-        if cont_1.button('Ignora',
-                         width=main_btn_w,
-                         disabled = not (0 <= curr_idx <= n-1),
-                         type='primary' if curr_state == False else 'secondary'):
+        def _go_right_and_ignore():
             st.session_state['controversial_keep'][curr_idx] = False
             st.session_state['controversial_idx'] = curr_idx + 1
-            st.rerun()
+        cont_1.button(
+            'Ignora',
+            width=main_btn_w,
+            on_click=_go_right_and_ignore,
+            disabled = not (0 <= curr_idx <= n-1),
+            type='primary' if curr_state == False else 'secondary'
+        )
     
     with cols[2]:  # per calificar
         cont_2 = st.container(horizontal_alignment='left')
-        if cont_2.button('Per calificar',
-                         width=main_btn_w,
-                         disabled = not (0 <= curr_idx <= n-1),
-                         type='primary' if curr_state == True else 'secondary'):
+        def _go_right_and_clasf():
             st.session_state['controversial_keep'][curr_idx] = True
             st.session_state['controversial_idx'] = curr_idx + 1
-            st.rerun()
+        cont_2.button(
+            'Per calificar',
+            on_click=_go_right_and_clasf,
+            width=main_btn_w,
+            disabled = not (0 <= curr_idx <= n-1),
+            type='primary' if curr_state == True else 'secondary'
+        )
     
     with cols[3]:  # right
         cont_3 = st.container(horizontal_alignment='right')
-        if cont_3.button('>', disabled = curr_idx >= n):
+        def _go_right():
             st.session_state['controversial_idx'] = curr_idx + 1
-            st.rerun()
+        cont_3.button('>', disabled = curr_idx >= n, on_click=_go_right)
 
-
+@st.cache_data
 def add_controversial_to_new(new, selection):
     """Add selection from controversial to new and sort."""
     # Add

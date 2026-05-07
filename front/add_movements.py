@@ -24,6 +24,7 @@ if db is False:
     st.stop()
 
 def change_upload_cleanup():
+    """If uploaded file changes, run these to restart cleanly."""
     st.session_state.pop('controversial_select', 0)
     st.session_state.pop('manage_controversial', 0)
     st.session_state.pop('classification', 0)
@@ -36,7 +37,7 @@ if uploaded_file is None:
 
 
 # ------------------------------------------------------------------------------
-# READ UPLOAD AND MANAGE CONTROVERSIALS
+# READ, UPLOAD AND MANAGE CONTROVERSIALS
 # ------------------------------------------------------------------------------
 
 
@@ -79,7 +80,7 @@ if st.toggle('Mostra els nous moviments.'):
 
 # ------------------------------------------------------------------------------
 # CLASSIFICATION
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 
 st.space('small')
