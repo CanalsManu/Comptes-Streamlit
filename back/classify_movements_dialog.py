@@ -1,6 +1,8 @@
 import streamlit as st
 
 
+MAX_CATEGORIES_PER_ROW = 4
+
 def start_classification(movements):
     """First call to classify_movements. Setting defaults."""
     st.session_state['classification'] = {
@@ -28,10 +30,6 @@ def classify_movements(movements):
     # Get current values
     n = movements.shape[0]
     curr_idx = st.session_state['classification']['curr_idx']
-    if 0 <= curr_idx <= n-1:
-        curr_res = st.session_state['classification']['results'][curr_idx]
-    else:
-        curr_res = None
 
     # End page
     if curr_idx >= n:
@@ -43,7 +41,10 @@ def classify_movements(movements):
         _clsf_movement_info(curr_move)
 
         # Classification info
-        _clsf_show_categories(curr_res, curr_move)
+        _clsf_show_categories(curr_move)
+
+        # Add curr_classification info
+        _clsf_curr_res_info(curr_move)
     
     # Progress info
     st.progress(curr_idx/n)
@@ -52,6 +53,20 @@ def classify_movements(movements):
     _clsf_nav_buttons(curr_idx, n)
 
     return 
+
+
+def _clsf_curr_res_info(curr_move):
+    """Show current result under buttons."""
+    tree = st.session_state['clsf_tree']
+    curr_idx = st.session_state['classification']['curr_idx']
+    curr_res = st.session_state['classification']['results'][curr_idx]
+
+    if curr_res is None:
+        show_res = 'despeses-' if curr_move['Import'] <= 0 else 'ingressos-'
+    else:
+        show_res = curr_res
+
+    st.button(show_res, type='tertiary', width='stretch')
 
 
 def _clsf_movement_info(curr_move):
@@ -67,9 +82,9 @@ def _clsf_movement_info(curr_move):
     st.write('---')
     
 
-def _clsf_show_categories(curr_res, curr_move):
+def _clsf_show_categories(curr_move):
     """
-    Show possible categories from clasf tree and choose.
+    Show possible categories from clsf tree and choose.
     
     - if curr_res is not None: highlight = True and show current choices?
     - see if import neg or pos
@@ -86,14 +101,14 @@ def _clsf_show_categories(curr_res, curr_move):
             - go next
         - if there are subcategories
             - save curr_res = 'cat1-' (notice the dash)
-    - elif curr_res end with '-' -> clasf in progress
+    - elif curr_res end with '-' -> clsf in progress
         - show and choose subcategories based on curr_res, e.g., subcat2
         - if there are no more subcategories
             - save curr_res = 'cat1-subcat2'
             - go next
         - if there are more subcategories
             - save curr_res = 'cat1-subcat2-'
-    - else (curr res is not None and doesn't end with -) -> clasf done
+    - else (curr res is not None and doesn't end with -) -> clsf done
         - show starting categories with highligh
         - if something is chosen, e.g. cat2
             - overwrite: curr_res = 'cat2' or 'cat2-' (similar as before)
@@ -106,49 +121,88 @@ def _clsf_show_categories(curr_res, curr_move):
 
     I am currently assuming top categories are ['despesses', 'ingressos']
     """
+    tree = st.session_state['clsf_tree']
+    curr_idx = st.session_state['classification']['curr_idx']
+    curr_res = st.session_state['classification']['results'][curr_idx]
 
+    # Starting new classification
     if curr_res is None:
-        if curr_move['Import'] <= 0:
-            # get import subcategories
-            # show those categories
-            # each button wil have the on-click effect of saving curr_res and/or go next and/or overwrite
-            pass
-        else:
-            # get despesses subcategories
-            # show other categories (similar)
-            # choose (similar)
-            pass
+        top_category = 'despeses' if curr_move['Import'] <= 0 else 'ingressos'
+        next_categories = list(tree[top_category].keys())
+        _show_clsf_buttons(next_categories, top_category=top_category)
+        # choose (similar)
 
+    # On-going classification
     elif curr_res[-1] == '-':
-        # get following categories
-        # show (simlar)
+        prev_categories = curr_res[:-1].split('-')
+        subtree = get_with_multikey(tree, prev_categories)
+        if subtree is None:
+            raise TypeError(f"No more subtree to clsf, should've been caught.")
+        next_categories = list(subtree.keys())
+        _show_clsf_buttons(next_categories)
         # choose (similar)
-        pass
 
+    # Classification done, showing result (possible overwrite)
     else:
-        # indicate highlight
-        # get top categories (similar)
-        # show (similar)
+        top_category = 'despeses' if curr_move['Import'] <= 0 else 'ingressos'
+        next_categories = list(tree[top_category].keys())
+        highlight = curr_res.split('-')[1]
+        _show_clsf_buttons(next_categories, highlight=highlight)
         # choose (similar)
-        pass
 
 
+def _show_clsf_buttons(categories, highlight=None, top_category=None):
+    """
+    Show categories buttons. Each button has on click effects.
+    
+    Parameters:
+        - categories: list[str]
+        - highlight: (optional) str, button to highlight
+        - top_category: (optional) str, top category to append to curr_res.
+                        Only to be used when curr_res = None.
+    """
+    tree = st.session_state['clsf_tree']
+    curr_idx = st.session_state['classification']['curr_idx']
+    curr_res = st.session_state['classification']['results'][curr_idx]
 
+    def _action(category):
+        """Add choice to result. If still need to clasf -> add ash, else ->
+        go next. If highlight, overwrite result."""
+        # New result
+        if top_category is not None:  # showing 1st subcat under despe./ingres.
+            assert curr_res is None
+            new_res = top_category + '-'
+        elif highlight is not None:  # clasf done, if triggered overwrite
+            new_res = curr_res.split('-')[0] + '-'
+        else:  # on-going clasf
+            assert curr_res[-1] == '-'
+            new_res = curr_res
+        new_res += category
 
+        # Check if clasf is done
+        subtree = get_with_multikey(tree, new_res.split('-'))
+        if subtree is None: # No more clasf -> save and go next
+            st.session_state['classification']['results'][curr_idx] = new_res
+            st.session_state['classification']['curr_idx'] += 1
 
-    classification_cols = st.columns(4)
+        else: # More subcategories -> save with dash and show same idx
+            new_res += '-'
+            st.session_state['classification']['results'][curr_idx] = new_res
 
-    with classification_cols[0]:
-        st.write('C1')
+    # Show max num per row   
+    for step_idx in range(0, len(categories), MAX_CATEGORIES_PER_ROW):
+        # Gather row categories
+        curr_num_categories = min(MAX_CATEGORIES_PER_ROW,
+                                  len(categories) - step_idx)
+        row_categories = categories[step_idx:step_idx+curr_num_categories]
 
-    with classification_cols[1]:
-        st.write('C2')
-
-    with classification_cols[2]:
-        st.write('C3')
-
-    with classification_cols[3]:
-        st.write('C4')
+        # Show row
+        cols = st.columns(curr_num_categories)
+        for idx, category in enumerate(row_categories):    
+            typ = 'primary' if highlight == category else 'secondary'
+            cols[idx].button(category, type=typ, width='stretch',
+                            shortcut=str(step_idx+idx+1),
+                            on_click=_action, args=[category])
 
 
 def _clsf_nav_buttons(curr_idx, n):
@@ -157,17 +211,35 @@ def _clsf_nav_buttons(curr_idx, n):
     def _go_left():
         st.session_state['classification']['curr_idx'] -= 1 
     cont_left = nav_cols[0].container(horizontal_alignment='left')
-    cont_left.button('<', disabled = (curr_idx <= 0), on_click = _go_left,
-                      type='tertiary')
+    cont_left.button('', disabled = (curr_idx <= 0), on_click = _go_left,
+                      type='tertiary', shortcut='Left')
 
     def _go_right():
         st.session_state['classification']['curr_idx'] += 1 
     cont_right = nav_cols[1].container(horizontal_alignment='right')
-    cont_right.button('>', disabled = (curr_idx  >= n), on_click = _go_right,
-                      type='tertiary')
+    cont_right.button('', disabled = (curr_idx  >= n), on_click = _go_right,
+                      type='tertiary', shortcut='Right')
 
 
 @st.dialog('Classificació feta.')
 def show_classification():
     """Show classification"""
     st.write(st.session_state['classification']['results'])
+
+
+def _safe_get_curr_res(n, default=None):
+    """Get current result if 0 <= curr_idx <= n-1 (n should be size)."""
+    curr_idx = st.session_state['classification']['curr_idx']
+    if 0 <= curr_idx <= n-1:
+        return st.session_state['classification']['results'][curr_idx]
+    else:
+        return default
+    
+
+def get_with_multikey(d, keys):
+    """Get d[keys[0]][...][keys[-1]], where keys is list of strings."""
+    assert len(keys) >= 1
+
+    multi_key = ''.join(f'["{k}"]' for k in keys)
+    result = eval('d'+multi_key)
+    return result
