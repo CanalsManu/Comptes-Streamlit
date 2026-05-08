@@ -39,10 +39,11 @@ def classify_movements(movements):
 
     # Movement info
     else:
-        _clsf_movement_info(movements, curr_idx)
+        curr_move = movements.iloc[curr_idx]
+        _clsf_movement_info(curr_move)
 
         # Classification info
-        _clsf_show_categories()
+        _clsf_show_categories(curr_res, curr_move)
     
     # Progress info
     st.progress(curr_idx/n)
@@ -53,20 +54,20 @@ def classify_movements(movements):
     return 
 
 
-def _clsf_movement_info(movements, curr_idx):
+def _clsf_movement_info(curr_move):
     move_cols = st.columns(2)
 
     with move_cols[0]:
-        st.write(movements.iloc[curr_idx]['Data'])
+        st.write(curr_move['Data'])
 
     with move_cols[1]:
-        st.write(movements.iloc[curr_idx]['Nom'])
-        st.write(movements.iloc[curr_idx]['Import'])
+        st.write(curr_move['Nom'])
+        st.write(curr_move['Import'])
 
     st.write('---')
     
 
-def _clsf_show_categories(curr_res):
+def _clsf_show_categories(curr_res, curr_move):
     """
     Show possible categories from clasf tree and choose.
     
@@ -76,7 +77,63 @@ def _clsf_show_categories(curr_res):
     - upon choosing, store result and show next subcategory
     - show current choices?
     - when no more category, show next movement
+
+    Maybe I can do this:
+    - if curr_res == None -> show initial cat based on import
+        - then, choose category, e.g., cat1
+        - if there are no subcategories
+            - save curr_res = 'cat1'
+            - go next
+        - if there are subcategories
+            - save curr_res = 'cat1-' (notice the dash)
+    - elif curr_res end with '-' -> clasf in progress
+        - show and choose subcategories based on curr_res, e.g., subcat2
+        - if there are no more subcategories
+            - save curr_res = 'cat1-subcat2'
+            - go next
+        - if there are more subcategories
+            - save curr_res = 'cat1-subcat2-'
+    - else (curr res is not None and doesn't end with -) -> clasf done
+        - show starting categories with highligh
+        - if something is chosen, e.g. cat2
+            - overwrite: curr_res = 'cat2' or 'cat2-' (similar as before)
+
+    The current function should handle just the above logic. Buttons somewhere
+    else. So basically, in this function I will choose the categories, and in 
+    another function I will show the corresponding buttons. Each button will
+    have an on_click function (build there or somewhere) that will do the
+    appropriate action.
+
+    I am currently assuming top categories are ['despesses', 'ingressos']
     """
+
+    if curr_res is None:
+        if curr_move['Import'] <= 0:
+            # get import subcategories
+            # show those categories
+            # each button wil have the on-click effect of saving curr_res and/or go next and/or overwrite
+            pass
+        else:
+            # get despesses subcategories
+            # show other categories (similar)
+            # choose (similar)
+            pass
+
+    elif curr_res[-1] == '-':
+        # get following categories
+        # show (simlar)
+        # choose (similar)
+        pass
+
+    else:
+        # indicate highlight
+        # get top categories (similar)
+        # show (similar)
+        # choose (similar)
+        pass
+
+
+
 
 
     classification_cols = st.columns(4)

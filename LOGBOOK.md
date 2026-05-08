@@ -77,3 +77,7 @@ TODO:
 - Avoid rerunning in controversials
 - Clasf tree from list/series
 - TODO: start with classfication interaction
+
+08/05/2026
+- Updated description of _clsf_show_categories (check it out for plan)
+- Started implenting it

@@ -1,3 +1,5 @@
+import streamlit as st
+
 def dashed_to_tree(dashed):
     """
     Get classification tree from list or Series of dashed classification.
@@ -41,4 +43,12 @@ def _add_branch_to_tree(tree, branch):
     # Set the value for the final key in the path
     current[branch[-1]] = None
     return tree
+
+
+def check_tree(tree):
+    """Run checks on the classification tree and raise error if needed."""
+    assert len(tree.keys()) == 2
+    keys = sorted(list(tree.keys()))
+    assert keys == ['despeses', 'ingressos']
+
 
