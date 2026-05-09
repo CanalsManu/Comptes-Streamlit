@@ -1,4 +1,5 @@
 import streamlit as st
+from datetime import date as ddate
 
 
 MAX_CATEGORIES_PER_ROW = 4
@@ -13,7 +14,7 @@ def start_classification(movements):
     classify_movements(movements)
 
 
-@st.dialog('Classifica els nous moviments', width='medium')
+@st.dialog(':small[Classificant...]', width='medium')
 def classify_movements(movements):
     """
     Dialog to classify movements.
@@ -56,15 +57,12 @@ def _clsf_end_page():
 
 
 def _clsf_progress(n):
-    """Show progress. st.progress() or array of buttons."""
+    """Show progress. Array of buttons showing status, on_click jump to idx."""
     curr_idx = st.session_state['classification']['curr_idx']
     results = st.session_state['classification']['results']
-
     # st.progress(curr_idx/n)
 
-    # Array of buttons: one button for each movement, each buttons shows if 
-    # that movement has been completed, also allows to click and jump there, 
-    # also somehow highlight current position.
+    # Array of buttons
     cont = st.container(horizontal=True, horizontal_alignment='center',
                         vertical_alignment='center', gap=None)
     for move_idx in range(n):
@@ -116,7 +114,7 @@ def _clsf_curr_res_info(curr_move):
     badges_md = []
     first_color = {'ingressos': 'green', 'despeses': 'red'}
     for idx, category in enumerate(show_res.split('-')):
-        color = first_color[category] if idx==0 else 'blue'
+        color = first_color[category] if idx==0 else 'grey'
         badges_md.append(f':{color}-badge[{category}]')
     cont = st.container(width='stretch', horizontal_alignment='center',
                         vertical_alignment='center', horizontal=True)
@@ -131,13 +129,100 @@ def _clsf_movement_info(curr_move):
     move_cols = st.columns(2)
 
     with move_cols[0]:
-        st.write(curr_move['Data'])
+        date = date_str_to_tuple(curr_move['Data'])
+        month_calendar(date[1], date[2], hightlight=date[0])
 
     with move_cols[1]:
-        st.write(curr_move['Nom'])
-        st.write(curr_move['Import'])
+        cont = st.container(vertical_alignment='center', height='stretch')
+        cont.write(curr_move['Nom'])
+
+        import_str = ':green[+' if curr_move['Import'] > 0 else ':red[-'
+        import_str += f'{abs(curr_move['Import']):.2f}' + ']'
+        cont.write(import_str)
 
     st.write('---')
+
+
+def month_calendar(month, year, hightlight=None):
+    """Month: int from 1 to 12 (inclusive). highlight (optional) day (int)."""
+    # Formats
+    off_month = ':gray-badge[····]'
+    off_month = ':gray-badge[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]'
+    in_month = ':gray-badge[ {:02} ]'
+    curr_day = ':primary-badge[ {:02} ]'
+    week_name = ':primary-badge[{}]'
+
+    # Set up
+    assert 1 <= month <= 12 
+    month_days = days_in_month(month, year)
+    def write_week(week, sep=''):
+        week.insert(5, '|')
+        st.markdown(sep.join(week), text_alignment='center')
+
+    # Prepare week names
+    names = ['  dl', 'dt', 'dc', 'dj', 'dv', 'ds', 'dg']
+    names = ['DL', 'DT', 'DC', 'DJ', 'DV', 'DS', 'DG']
+    week_names = [week_name.format(d) for d in names]
+
+    # Build first week
+    first_weekday = weekday_from_date((1, month, year))  # mon: 0, sun: 6
+    first_week = [off_month] * first_weekday
+    first_week += [in_month.format(n) for n in range(1, 7 - first_weekday + 1)]
+
+    # Container with multiple markdowns
+    month_cont = st.container(horizontal=False, horizontal_alignment='center',
+                             gap=None, vertical_alignment='center',
+                             width='stretch', border=False)
+    with month_cont:
+
+        # Write header and first week
+        spacing = ' ' * 30
+        st.text(month_name(month).upper() + spacing + str(year), 
+                text_alignment='center')
+        write_week(first_week)
+
+        # Rest of the month
+        for start_day in range(8 - first_weekday, month_days, 7):
+            # Build week
+            days_in_week = min(month_days - start_day, 7)
+            week = [in_month.format(n)
+                    for n in range(start_day, start_day+days_in_week)]
+            week += [off_month] * (7 - days_in_week)
+
+            # If given, highlight day
+            if hightlight is None:
+                pass
+            elif start_day <= hightlight <= start_day + days_in_week - 1:
+                week[hightlight - start_day] = curr_day.format(hightlight)
+
+            write_week(week)
+    
+
+def month_name(month):
+    """month: int from 1 to 12 (inclusive)."""
+    assert 1 <= month <= 12
+    names = ['Gener', 'Febrer', 'Març', 'Abril', 'Maig', 'Juny',
+             'Juliol', 'Agost', 'Setembre', 'Octubre', 'Novembre', 'Decembre']
+    return names[month]
+
+
+def days_in_month(month, year):
+    """month: int from 1 to 12 (inclusive)."""
+    assert 1 <= month <= 12
+    if month == 12:
+        return 31
+    return (ddate(year, month+1, 1) - ddate(year, month, 1)).days
+
+def weekday_from_date(date):
+    """Date in format (str) dd/mm/yyyy or (list[int]) (d, m, y)."""
+    if isinstance(date, str):
+        date = date_str_to_tuple(date)
+    return ddate(date[2], date[1], date[0]).weekday()
+
+
+def date_str_to_tuple(date_str):
+    """Date in format (str) dd/mm/yyyy to (list[int]) (d, m, y)."""
+    return (int(date_str[:2]), int(date_str[3:5]), int(date_str[6:]))
     
 
 def _clsf_show_categories(curr_move):
