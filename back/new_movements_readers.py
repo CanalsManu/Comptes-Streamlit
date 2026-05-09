@@ -15,7 +15,7 @@ def read_xml_to_df(path):
 
     # Initial formatting
     df['Nom'] = df['Nom'].map(str.upper)
-    df['Import'] = df['Import'].map(lambda x: float(x))
+    df['Import'] = df['Import'].map(lambda x: float(x)) # type: ignore
 
     return df
 
@@ -143,7 +143,7 @@ def _controversial_end_page(movements):
 
     # Store selection in session, delete keys and flag out
     if col.button('Guarda les eleccions', width='stretch', type='primary',
-                    disabled=answer_missing):
+                  disabled=answer_missing, shortcut='ENTER'):
         
         # Store results
         mask = st.session_state['controversial_keep']
@@ -184,7 +184,8 @@ def _controversial_buttons(curr_idx, curr_state, n):
         cont_0 = st.container(horizontal_alignment='left')
         def _go_left():
             st.session_state['controversial_idx'] = curr_idx - 1
-        cont_0.button('<', disabled = curr_idx <= 0, on_click=_go_left)
+        cont_0.button('', disabled = curr_idx <= 0, on_click=_go_left,
+                      shortcut='Left', type='tertiary')
     
     with cols[1]:  # ignora
         cont_1 = st.container(horizontal_alignment='right')
@@ -196,7 +197,8 @@ def _controversial_buttons(curr_idx, curr_state, n):
             width=main_btn_w,
             on_click=_go_right_and_ignore,
             disabled = not (0 <= curr_idx <= n-1),
-            type='primary' if curr_state == False else 'secondary'
+            type='primary' if curr_state == False else 'secondary',
+            shortcut='1'
         )
     
     with cols[2]:  # per calificar
@@ -209,14 +211,16 @@ def _controversial_buttons(curr_idx, curr_state, n):
             on_click=_go_right_and_clasf,
             width=main_btn_w,
             disabled = not (0 <= curr_idx <= n-1),
-            type='primary' if curr_state == True else 'secondary'
+            type='primary' if curr_state == True else 'secondary',
+            shortcut='2'
         )
     
     with cols[3]:  # right
         cont_3 = st.container(horizontal_alignment='right')
         def _go_right():
             st.session_state['controversial_idx'] = curr_idx + 1
-        cont_3.button('>', disabled = curr_idx >= n, on_click=_go_right)
+        cont_3.button('', disabled = curr_idx >= n, on_click=_go_right,
+                      shortcut='Right', type='tertiary')
 
 @st.cache_data
 def add_controversial_to_new(new, selection):

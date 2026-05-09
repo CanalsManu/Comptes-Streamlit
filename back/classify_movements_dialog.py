@@ -33,7 +33,7 @@ def classify_movements(movements):
 
     # End page
     if curr_idx >= n:
-        st.write('end page.')
+        _clsf_end_page()
 
     # Movement info
     else:
@@ -45,28 +45,86 @@ def classify_movements(movements):
 
         # Add curr_classification info
         _clsf_curr_res_info(curr_move)
-    
-    # Progress info
-    st.progress(curr_idx/n)
 
-    # Navigation buttons
+    # Navigation buttons and progress
     _clsf_nav_buttons(curr_idx, n)
 
-    return 
+
+def _clsf_end_page():
+    """End page. If (all) clasf done, button to write to database."""
+    st.write('end page.')
+
+
+def _clsf_progress(n):
+    """Show progress. st.progress() or array of buttons."""
+    curr_idx = st.session_state['classification']['curr_idx']
+    results = st.session_state['classification']['results']
+
+    # st.progress(curr_idx/n)
+
+    # Array of buttons: one button for each movement, each buttons shows if 
+    # that movement has been completed, also allows to click and jump there, 
+    # also somehow highlight current position.
+    cont = st.container(horizontal=True, horizontal_alignment='center',
+                        vertical_alignment='center', gap=None)
+    for move_idx in range(n):
+        # Choose icon
+        is_curr_idx = move_idx == curr_idx
+        completed = _is_completed(results[move_idx])
+        icon = _choose_icon(is_curr_idx, completed)
+
+        # Action
+        def _action(target_idx):
+            st.session_state['classification']['curr_idx'] = target_idx
+
+        # Button
+        cont.button(icon, type='tertiary', key=f'progress_btn_{move_idx}',
+                    on_click=_action, args=[move_idx])
+
+
+def _is_completed(curr_res):
+    """Return if clsf completed given the current results (str)."""
+    if curr_res is None:
+        return False
+    elif curr_res[-1] == '-':
+        return False
+    else:
+        return True
+
+
+def _choose_icon(is_curr_idx, completed):
+    match (is_curr_idx, completed):
+        case (True, True): return ':material/check_circle:'
+        case (True, False): return ':material/circle:'
+        case (False, True): return ':material/check_small:'
+        case (False, False): return ':material/check_indeterminate_small:'
+        case _: raise Exception
 
 
 def _clsf_curr_res_info(curr_move):
     """Show current result under buttons."""
-    tree = st.session_state['clsf_tree']
     curr_idx = st.session_state['classification']['curr_idx']
     curr_res = st.session_state['classification']['results'][curr_idx]
 
+    # Get info
     if curr_res is None:
         show_res = 'despeses-' if curr_move['Import'] <= 0 else 'ingressos-'
     else:
         show_res = curr_res
 
-    st.button(show_res, type='tertiary', width='stretch')
+    # Display info
+    badges_md = []
+    first_color = {'ingressos': 'green', 'despeses': 'red'}
+    for idx, category in enumerate(show_res.split('-')):
+        color = first_color[category] if idx==0 else 'blue'
+        badges_md.append(f':{color}-badge[{category}]')
+    cont = st.container(width='stretch', horizontal_alignment='center',
+                        vertical_alignment='center', horizontal=True)
+    cont.markdown(' -> '.join(badges_md))
+
+    # for category in show_res.split('-'):
+    #     st.badge(category)
+    # st.button(show_res, type='tertiary', width='stretch')
 
 
 def _clsf_movement_info(curr_move):
@@ -206,17 +264,20 @@ def _show_clsf_buttons(categories, highlight=None, top_category=None):
 
 
 def _clsf_nav_buttons(curr_idx, n):
-    nav_cols = st.columns([1, 1])
+    nav_cols = st.columns([1, 3, 1])
 
     def _go_left():
         st.session_state['classification']['curr_idx'] -= 1 
     cont_left = nav_cols[0].container(horizontal_alignment='left')
     cont_left.button('', disabled = (curr_idx <= 0), on_click = _go_left,
                       type='tertiary', shortcut='Left')
+    
+    with nav_cols[1]:
+        _clsf_progress(n)
 
     def _go_right():
         st.session_state['classification']['curr_idx'] += 1 
-    cont_right = nav_cols[1].container(horizontal_alignment='right')
+    cont_right = nav_cols[2].container(horizontal_alignment='right')
     cont_right.button('', disabled = (curr_idx  >= n), on_click = _go_right,
                       type='tertiary', shortcut='Right')
 

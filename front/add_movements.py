@@ -97,14 +97,15 @@ if 'classification' not in st.session_state:
 
     # use on_click to force rerun
     col.button(name, width='stretch', type='primary', disabled=disabled,
-               on_click=start_classification, args=[to_be_clsf])
+               on_click=start_classification, args=[to_be_clsf],
+               shortcut='Enter')
 
 elif st.session_state['classification']['status'] == 'done':
     if col.button('Classificació feta! Mostra-la.', width='stretch',
-                  type='tertiary'):
+                  type='tertiary', shortcut='Enter'):
         show_classification()
 
 else:
     if col.button('Continua la classificació', width='stretch',
-                  type='secondary'):
+                  type='secondary', shortcut='Enter'):
         classify_movements(to_be_clsf)

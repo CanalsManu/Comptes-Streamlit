@@ -81,3 +81,7 @@ TODO:
 08/05/2026
 - Updated description of _clsf_show_categories (check it out for plan)
 - Started implenting it
+- Also added basic interactino with buttons
+
+09/05/2026
+- Progress and badges added to clasf
