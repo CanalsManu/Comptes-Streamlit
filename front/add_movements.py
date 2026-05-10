@@ -103,7 +103,7 @@ if 'classification' not in st.session_state:
 elif st.session_state['classification']['status'] == 'done':
     if col.button('Classificació feta! Mostra-la.', width='stretch',
                   type='tertiary', shortcut='Enter'):
-        show_classification()
+        show_classification(to_be_clsf)
 
 else:
     if col.button('Continua la classificació', width='stretch',

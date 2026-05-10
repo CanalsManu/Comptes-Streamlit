@@ -1,5 +1,6 @@
 import streamlit as st
 from datetime import date as ddate
+import pandas as pd
 
 
 MAX_CATEGORIES_PER_ROW = 4
@@ -14,7 +15,7 @@ def start_classification(movements):
     classify_movements(movements)
 
 
-@st.dialog(':small[Classificant...]', width='medium')
+@st.dialog(':small[Classificant...]', width='medium', on_dismiss='rerun')
 def classify_movements(movements):
     """
     Dialog to classify movements.
@@ -34,7 +35,7 @@ def classify_movements(movements):
 
     # End page
     if curr_idx >= n:
-        _clsf_end_page()
+        _clsf_end_page(movements)
 
     # Movement info
     else:
@@ -42,18 +43,107 @@ def classify_movements(movements):
         _clsf_movement_info(curr_move)
 
         # Classification info
+        st.space()
         _clsf_show_categories(curr_move)
 
         # Add curr_classification info
         _clsf_curr_res_info(curr_move)
 
     # Navigation buttons and progress
+    st.space()
     _clsf_nav_buttons(curr_idx, n)
 
 
-def _clsf_end_page():
-    """End page. If (all) clasf done, button to write to database."""
-    st.write('end page.')
+def _clsf_end_page(movements):
+    """
+    End page. If (all) clasf done, button to write to database.
+    
+    - if all clsf is done:
+        - offer button to write to database
+        - toggle to see/double check clsf
+    - if not all clsf is done:
+        - disables button to write to database
+        - toggle to see/double check clsf
+    """
+    # Set up
+    results = st.session_state['classification']['results']
+    completed = all([_is_completed(res) for res in results])
+
+    if completed:
+        info_text = 'Classificació completa!'
+        disabled = False
+        # st.balloons()
+    else:
+        info_text = 'Classificació incompleta. Si us plau, acaba-la per' \
+                    ' continuar).'
+        disabled = True
+
+    # Display after add movements
+    if st.session_state['classification']['status'] == 'done':
+        st.balloons()
+        st.text('CLASSIFICACIÓ FETA!', text_alignment='center',
+                width='stretch')
+        st.stop()
+
+    # Display before adding movements
+    st.text(info_text)
+    st.button('Afegeix a la base de dades', disabled=disabled,
+                type='primary', width='stretch',
+                on_click=add_classification_to_db, args=(movements, results))
+    if st.toggle('Revisa la classificació'):
+        show_current_clsf(movements, results)
+        
+
+
+    # st.text(info_text)
+    # if st.button('Afegeix a la base de dades', disabled=disabled,
+    #              type='primary', width='stretch'):
+    #     add_classification_to_db(movements, results)
+    #     # st.rerun()
+    
+
+
+def add_classification_to_db(movements, results):
+    """
+    Add classification (results) of the movements to the database. Basically:
+    - add movements (safely?)
+    - flag that we are done
+    - close
+    """
+    # add
+    st.session_state['classification']['status'] = 'done'
+
+
+def show_current_clsf(movements, results):
+    """Show table to double check classifications at end page."""
+    show_moves = movements.copy()
+    show_moves['Data'] = show_moves['Data'].map(_format_date)
+    show_moves['Import'] = show_moves['Import'].map(_format_import)
+    show_moves['Classificació'] = [
+        _build_clsf_badges(res, amount)
+        for res, amount in zip(results, movements['Import'])
+    ]
+    st.table(
+        show_moves,
+        hide_index=True,
+        border='horizontal'
+    )
+
+
+def _format_date(date_str):
+    """Format 'dd/mm/yyyy' into 'weekday, d de m. de yyyy'."""
+    d, m, y = date_str_to_tuple(date_str)
+
+    # Weekday
+    weekday_idx = weekday_from_date(date_str)
+    weekday_names = ['Dl.', 'Dt.', 'Dc.', 'Dj.', 'Dv.', 'Ds.', 'Dg.']
+
+    # Month
+    de_month_names = ['de gen.', 'de feb.', 'de mar.', "d'abr.",
+                   'de mai.', 'de jun.', 'de jul.', "d'ago.",
+                   'de set.', "d'oct.", 'de nov.', 'de dec.']
+    return f'{weekday_names[weekday_idx]}, {d} {de_month_names[m]} de {y}'
+
 
 
 def _clsf_progress(n):
@@ -62,18 +152,23 @@ def _clsf_progress(n):
     results = st.session_state['classification']['results']
     # st.progress(curr_idx/n)
 
+    # Each button moves to taret_idx
+    def _action(target_idx):
+        st.session_state['classification']['curr_idx'] = target_idx
+
     # Array of buttons
     cont = st.container(horizontal=True, horizontal_alignment='center',
                         vertical_alignment='center', gap=None)
-    for move_idx in range(n):
-        # Choose icon
+    for move_idx in range(n+1):
         is_curr_idx = move_idx == curr_idx
-        completed = _is_completed(results[move_idx])
-        icon = _choose_icon(is_curr_idx, completed)
 
-        # Action
-        def _action(target_idx):
-            st.session_state['classification']['curr_idx'] = target_idx
+        # Choose icon
+        if move_idx == n:
+            icon = (':material/add_circle:' if is_curr_idx
+                    else ':material/add:')
+        else:
+            completed = _is_completed(results[move_idx])
+            icon = _choose_icon(is_curr_idx, completed)
 
         # Button
         cont.button(icon, type='tertiary', key=f'progress_btn_{move_idx}',
@@ -104,9 +199,18 @@ def _clsf_curr_res_info(curr_move):
     curr_idx = st.session_state['classification']['curr_idx']
     curr_res = st.session_state['classification']['results'][curr_idx]
 
+    info_str = _build_clsf_badges(curr_res, curr_move['Import'])
+
+    cont = st.container(width='stretch', horizontal_alignment='center',
+                        vertical_alignment='center', horizontal=True)
+    cont.markdown(info_str)
+
+
+def _build_clsf_badges(curr_res, amount):
+    """Return string with markdown to render badges."""
     # Get info
     if curr_res is None:
-        show_res = 'despeses-' if curr_move['Import'] <= 0 else 'ingressos-'
+        show_res = 'despeses-' if amount <= 0 else 'ingressos-'
     else:
         show_res = curr_res
 
@@ -116,13 +220,9 @@ def _clsf_curr_res_info(curr_move):
     for idx, category in enumerate(show_res.split('-')):
         color = first_color[category] if idx==0 else 'grey'
         badges_md.append(f':{color}-badge[{category}]')
-    cont = st.container(width='stretch', horizontal_alignment='center',
-                        vertical_alignment='center', horizontal=True)
-    cont.markdown(' -> '.join(badges_md))
-
-    # for category in show_res.split('-'):
-    #     st.badge(category)
-    # st.button(show_res, type='tertiary', width='stretch')
+        
+    sep = ' -> '
+    return sep.join(badges_md)
 
 
 def _clsf_movement_info(curr_move):
@@ -135,12 +235,13 @@ def _clsf_movement_info(curr_move):
     with move_cols[1]:
         cont = st.container(vertical_alignment='center', height='stretch')
         cont.write(curr_move['Nom'])
+        cont.write(_format_import(curr_move['Import']))
 
-        import_str = ':green[+' if curr_move['Import'] > 0 else ':red[-'
-        import_str += f'{abs(curr_move['Import']):.2f}' + ']'
-        cont.write(import_str)
 
-    st.write('---')
+def _format_import(amount):
+    import_str = ':green[+' if amount > 0 else ':red[-'
+    import_str += f'{abs(amount):.2f}' + ']'
+    return import_str
 
 
 def month_calendar(month, year, hightlight=None):
@@ -214,7 +315,7 @@ def days_in_month(month, year):
     return (ddate(year, month+1, 1) - ddate(year, month, 1)).days
 
 def weekday_from_date(date):
-    """Date in format (str) dd/mm/yyyy or (list[int]) (d, m, y)."""
+    """Date in format 'dd/mm/yyyy' or (d, m, y) to weekday (mon:0, sun:6)."""
     if isinstance(date, str):
         date = date_str_to_tuple(date)
     return ddate(date[2], date[1], date[0]).weekday()
@@ -326,7 +427,7 @@ def _show_clsf_buttons(categories, highlight=None, top_category=None):
         subtree = get_with_multikey(tree, new_res.split('-'))
         if subtree is None: # No more clasf -> save and go next
             st.session_state['classification']['results'][curr_idx] = new_res
-            st.session_state['classification']['curr_idx'] += 1
+            st.session_state['classification']['curr_idx'] = _find_nxt_unclsf()
 
         else: # More subcategories -> save with dash and show same idx
             new_res += '-'
@@ -348,6 +449,19 @@ def _show_clsf_buttons(categories, highlight=None, top_category=None):
                             on_click=_action, args=[category])
 
 
+def _find_nxt_unclsf():
+    """Find next index with unclsf item."""
+    curr_idx = st.session_state['classification']['curr_idx']
+    results = st.session_state['classification']['results']
+    for next_idx in range(curr_idx+1, len(results)):
+        if results[next_idx] is None:
+            return next_idx
+        if results[next_idx][-1] == '-':
+            return next_idx
+    else:
+        return len(results)
+
+
 def _clsf_nav_buttons(curr_idx, n):
     nav_cols = st.columns([1, 3, 1])
 
@@ -367,10 +481,10 @@ def _clsf_nav_buttons(curr_idx, n):
                       type='tertiary', shortcut='Right')
 
 
-@st.dialog('Classificació feta.')
-def show_classification():
+@st.dialog('Classificació feta.', width='medium')
+def show_classification(movements):
     """Show classification"""
-    st.write(st.session_state['classification']['results'])
+    show_current_clsf(movements, st.session_state['classification']['results'])
 
 
 def _safe_get_curr_res(n, default=None):

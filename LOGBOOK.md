@@ -85,3 +85,13 @@ TODO:
 
 09/05/2026
 - Progress and badges added to clasf
+- Added month to clsf
+
+10/05/2026
+- After clsf button -> move to next unclsf
+- Added end page navigation button
+- Plan:
+    - plan end page <- DONE
+    - do end page <- DONE
+        - fancy stuff <- DONE
+        - add result to movmeent <- TODO
