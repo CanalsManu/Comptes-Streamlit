@@ -45,7 +45,7 @@ def _add_branch_to_tree(tree, branch):
     return tree
 
 
-def check_tree(tree):
+def check_clsf_tree(tree):
     """Run checks on the classification tree and raise error if needed."""
     assert len(tree.keys()) == 2
     keys = sorted(list(tree.keys()))

@@ -87,11 +87,10 @@ def compare_movements(uploaded, db):
 
     # Filter repeated movements (pd.merge like this only returns equal rows)
     df_repeated = pd.merge(uploaded, db)
-    df_repeated.drop('Classificació', inplace=True, axis=1)
 
     # Filter controversial elements (and here only returns different rows)
     df_controversial = pd.merge(uploaded, db, how='left_anti')
-    df_controversial.drop(['Classificació', 'Categories'],
+    df_controversial.drop(['Categories'],
                           inplace=True, axis=1)
 
     return df_new, df_repeated, df_controversial

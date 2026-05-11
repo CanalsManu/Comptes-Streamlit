@@ -95,3 +95,8 @@ TODO:
     - do end page <- DONE
         - fancy stuff <- DONE
         - add result to movmeent <- TODO
+        - maybe add buttons to show clsf in toggle end pageto jump to that page (?) 
+        - maybe add highligh on sho clsf in toggle end page flagging undone (?)
+
+11/05/2026
+- Interactive table is too hard (either table with markdown or interactive dataframe)

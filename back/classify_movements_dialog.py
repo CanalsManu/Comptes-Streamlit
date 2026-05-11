@@ -72,7 +72,6 @@ def _clsf_end_page(movements):
     if completed:
         info_text = 'Classificació completa!'
         disabled = False
-        # st.balloons()
     else:
         info_text = 'Classificació incompleta. Si us plau, acaba-la per' \
                     ' continuar).'
@@ -83,6 +82,7 @@ def _clsf_end_page(movements):
         st.balloons()
         st.text('CLASSIFICACIÓ FETA!', text_alignment='center',
                 width='stretch')
+        show_current_clsf(movements, results)
         st.stop()
 
     # Display before adding movements
@@ -91,16 +91,7 @@ def _clsf_end_page(movements):
                 type='primary', width='stretch',
                 on_click=add_classification_to_db, args=(movements, results))
     if st.toggle('Revisa la classificació'):
-        show_current_clsf(movements, results)
-        
-
-
-    # st.text(info_text)
-    # if st.button('Afegeix a la base de dades', disabled=disabled,
-    #              type='primary', width='stretch'):
-    #     add_classification_to_db(movements, results)
-    #     # st.rerun()
-    
+        show_current_clsf(movements, results)    
 
 
 def add_classification_to_db(movements, results):
@@ -111,6 +102,8 @@ def add_classification_to_db(movements, results):
     - close
     """
     # add
+    db = st.session_state['db']
+    
     st.session_state['classification']['status'] = 'done'
 
 

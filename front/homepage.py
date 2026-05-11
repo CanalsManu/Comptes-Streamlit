@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from back.classification_tree import (
     dashed_to_tree,
-    check_tree
+    check_clsf_tree
 )
 
 @st.dialog("Hola!", dismissible=False)
@@ -11,12 +11,12 @@ def init_dialog():
 
     if uploaded_file is not None:
         db = pd.read_csv(uploaded_file)
-        st.session_state['db'] = db
+        clsf = db.pop('Classificació')
 
-        # Create classification tree
-        clsf = db['Classificació']
+        st.session_state['db'] = db
         st.session_state['clsf_tree'] = dashed_to_tree(clsf[~clsf.isnull()])
-        check_tree(st.session_state['clsf_tree'])
+        check_clsf_tree(st.session_state['clsf_tree'])
+
         st.rerun()
 
     if st.button("Close"):
