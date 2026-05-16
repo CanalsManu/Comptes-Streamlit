@@ -100,3 +100,11 @@ TODO:
 
 11/05/2026
 - Interactive table is too hard (either table with markdown or interactive dataframe)
+- db now doesn't include classifition (that's on clsf_tree)
+- Added movements to db
+- Plan:
+    - fix bug of disappearing uploaded_movements (after uploading movements, if page is changed, when returning to add movements page, the uploaded file will no longer be there)
+        - while doing this, I got a weir error about parsing ett while compring bugs :((()))
+
+16/05/2026
+- Fixed bug of disappearing uploaded_movements, new keys added to session_state

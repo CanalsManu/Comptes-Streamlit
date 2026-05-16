@@ -103,7 +103,14 @@ def add_classification_to_db(movements, results):
     """
     # add
     db = st.session_state['db']
-    
+    movements['Categories'] = results
+
+    col_to_datetime = lambda col: pd.to_datetime(col,format="%d/%m/%Y")
+    merged = pd.concat([db, movements], ignore_index=True)
+    sorted_db = merged.sort_values(by='Data', key=col_to_datetime,
+                                   ascending=False).reset_index(drop=True)
+
+    st.session_state['db'] = sorted_db
     st.session_state['classification']['status'] = 'done'
 
 
@@ -112,7 +119,7 @@ def show_current_clsf(movements, results):
     show_moves = movements.copy()
     show_moves['Data'] = show_moves['Data'].map(_format_date)
     show_moves['Import'] = show_moves['Import'].map(_format_import)
-    show_moves['Classificació'] = [
+    show_moves['Categories'] = [
         _build_clsf_badges(res, amount)
         for res, amount in zip(results, movements['Import'])
     ]
