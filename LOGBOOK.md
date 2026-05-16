@@ -15,7 +15,7 @@
     - analysis: page with TABS, on each of this tabs some analysis
     - classification_tree: visualization of the current classification, and possibility to modify classification and re-classify some movements 
     - database: basic full database table
-    - homepage: maybe has direct linksto other pages, nice messages and its basic purpose is to trigger the initial dialog to update the comptes file
+    - homepage: maybe has direct links to other pages, nice messages and its basic purpose is to trigger the initial dialog to update the comptes file
 - future steps:
     - do add_movements pages: all the interactivity with the user
 - small bug / feature: if you rerun while on a page which is not homepage, the dialog doesnt trigger
@@ -108,3 +108,25 @@ TODO:
 
 16/05/2026
 - Fixed bug of disappearing uploaded_movements, new keys added to session_state
+- Possible plan ahead:
+    - add 'auto' option. This has two flavors:
+        1. get dict with known movements from db. Then, upon uploading new movements, compare new and known and ask what to do with them:
+            - autocomplete all?
+            - review autocompletion?
+            - don't autocomplete?
+        2. the other case is when user is classifying new movements and one such new movement appears repeated in the new movements:
+            - ask if you want to autocomplete the rest?
+            - or review them?
+            - or don't do it?
+        0. This autocomplete has to come with:
+            - what happens when user changes classification? does that affect known movements? -> not really, cause db is only updated at the end
+            - therefore, adding new movements to db should also update known movements
+    - save and exit option:
+        - meaning, save and download the current db + classifciation tree into a csv file
+            - maybe csv should include some metadata like, creation date?
+        - button maybe at the bottom of sidebar? or maybe at bottom right corner? always present
+        - is there a way to ask user to confirm before leaving page, and also offer to save current progress
+    - some basic analysis
+        - tables per month
+        - dynamic plot (save plot info so user defines custom plots?)
+    
