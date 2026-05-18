@@ -142,7 +142,7 @@ def _format_date(date_str):
     de_month_names = ['de gen.', 'de feb.', 'de mar.', "d'abr.",
                    'de mai.', 'de jun.', 'de jul.', "d'ago.",
                    'de set.', "d'oct.", 'de nov.', 'de dec.']
-    return f'{weekday_names[weekday_idx]}, {d} {de_month_names[m]} de {y}'
+    return f'{weekday_names[weekday_idx]}, {d} {de_month_names[m-1]} de {y}'
 
 
 
@@ -304,7 +304,7 @@ def month_name(month):
     assert 1 <= month <= 12
     names = ['Gener', 'Febrer', 'Març', 'Abril', 'Maig', 'Juny',
              'Juliol', 'Agost', 'Setembre', 'Octubre', 'Novembre', 'Decembre']
-    return names[month]
+    return names[month-1]
 
 
 def days_in_month(month, year):
