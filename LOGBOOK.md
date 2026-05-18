@@ -136,3 +136,7 @@ TODO:
 - couple of big fixes:
     1. homepage now is default after refresh
     2. month name quick fix
+- Plan:
+    1. autocomplete from 16/05/2026
+    2. use it with real movements
+    3. basic analysis
