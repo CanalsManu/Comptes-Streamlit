@@ -12,9 +12,10 @@ def init_dialog():
     if uploaded_file is not None:
         db = pd.read_csv(uploaded_file)
         clsf = db.pop('Classificació')
+        clsf = clsf[~clsf.isnull()]  # removing nans from df
 
         st.session_state['db'] = db
-        st.session_state['clsf_tree'] = dashed_to_tree(clsf[~clsf.isnull()])
+        st.session_state['clsf_tree'] = dashed_to_tree(clsf)
         check_clsf_tree(st.session_state['clsf_tree'])
 
         st.rerun()

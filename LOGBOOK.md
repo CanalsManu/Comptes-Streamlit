@@ -129,4 +129,10 @@ TODO:
     - some basic analysis
         - tables per month
         - dynamic plot (save plot info so user defines custom plots?)
-    
+
+18/05/2026
+- added download button to download db and clsf_tree
+- correct names to pages
+- couple of big fixes:
+    1. homepage now is default after refresh
+    2. month name quick fix

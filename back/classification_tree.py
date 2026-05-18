@@ -45,10 +45,19 @@ def _add_branch_to_tree(tree, branch):
     return tree
 
 
-def check_clsf_tree(tree):
+def check_clsf_tree(tree: dict):
     """Run checks on the classification tree and raise error if needed."""
     assert len(tree.keys()) == 2
     keys = sorted(list(tree.keys()))
     assert keys == ['despeses', 'ingressos']
 
 
+def tree_to_dashed(tree, prefix=''):
+    """Get dashed classification from a tree."""
+    dashed = []
+    for key, subtree in tree.items():
+        if subtree is None:  # end of branch
+            dashed.append(prefix + key)
+        else:  # continue recursively
+            dashed.extend(tree_to_dashed(subtree, prefix + key + '-'))
+    return dashed

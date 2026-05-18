@@ -20,7 +20,7 @@ def fake_file_uploader(file_name, key, **button_kwargs):
 
     # Texts
     button_text = f'{shorten_name(file_name)}'
-    info_text = ':small[:gray[Clica per pujar un altre fitxer]]'
+    info_text = ':small[:gray[Clica per canviar el fitxer]]'
 
     # Display
     with cont:
