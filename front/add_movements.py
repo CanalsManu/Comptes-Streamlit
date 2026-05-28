@@ -12,6 +12,7 @@ from back.classify_movements_dialog import (
     start_classification
 )
 from back.fake_file_uploader import fake_file_uploader
+from back.known_movements import get_autocompletable
 
 
 # ------------------------------------------------------------------------------
@@ -106,6 +107,15 @@ if st.toggle('Mostra els nous moviments.'):
     st.dataframe(to_be_clsf, hide_index=True)
     st.write('---')
 
+
+# ------------------------------------------------------------------------------
+# AUTOCOMPLETE
+# ------------------------------------------------------------------------------
+
+autocompletable = get_autocompletable(st.session_state['known_movements'])
+to_be_auto = to_be_clsf[to_be_clsf['Nom'].isin(list(autocompletable.keys()))]
+print(to_be_auto)
+print(*[f'{name} -> {autocompletable[name]}' for name in to_be_auto['Nom']], sep='\n')
 
 # ------------------------------------------------------------------------------
 # CLASSIFICATION

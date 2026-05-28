@@ -4,6 +4,7 @@ from back.classification_tree import (
     dashed_to_tree,
     check_clsf_tree
 )
+from back.known_movements import get_known_movements
 
 @st.dialog("Hola!", dismissible=False)
 def init_dialog():
@@ -11,10 +12,13 @@ def init_dialog():
 
     if uploaded_file is not None:
         db = pd.read_csv(uploaded_file)
+        known_movements = get_known_movements(db['Nom'], db['Categories'])
+
         clsf = db.pop('Classificació')
         clsf = clsf[~clsf.isnull()]  # removing nans from df
 
         st.session_state['db'] = db
+        st.session_state['known_movements'] = known_movements
         st.session_state['clsf_tree'] = dashed_to_tree(clsf)
         check_clsf_tree(st.session_state['clsf_tree'])
 

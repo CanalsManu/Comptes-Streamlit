@@ -140,3 +140,22 @@ TODO:
     1. autocomplete from 16/05/2026
     2. use it with real movements
     3. basic analysis
+
+28/05/2026
+- About autocomplete 1 (comparing to db):
+    - A window should pop up right after controversials are handled (if known movements are found)
+    - It should say that known movements were found and ask what to do
+        1. autocomplete all
+        2. review autocomplete
+        3. skip
+    - Maybe better to only offer
+        1. autocomplete all
+        2. skip
+        0. show known movements found
+- So, in the middle of autcomplete implementation:
+    - we have known
+    - we are comparing them
+    - now we just have to ask user what to do and show found known movements
+    - if autocomplete -> how to autocomplete?
+        - pass it to classify movement maybe?
+        - or keep it in sepearate df and when db is updated update those too? <- this looks better
