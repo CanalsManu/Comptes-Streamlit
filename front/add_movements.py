@@ -12,7 +12,10 @@ from back.classify_movements_dialog import (
     start_classification
 )
 from back.fake_file_uploader import fake_file_uploader
-from back.known_movements import get_autocompletable
+from back.known_movements import (
+    get_autocompletable,
+    manage_autocomplete
+)
 ss = st.session_state
 
 
@@ -43,6 +46,10 @@ def cleanup_post_discard_file():
     ss.pop('uploaded_movements', 0)
     ss.pop('uploaded_file_name', 0)
 
+    # Reset autocomplete settings
+    ss.pop('manage_autocomplete', 0)
+    ss.pop('autocompleted', 0)
+
 
 # uploaded file -> fake it and continue
 if 'uploaded_movements' in ss:
@@ -54,7 +61,7 @@ if 'uploaded_movements' in ss:
 # not uploaded file -> show real uploader
 else:
     st.markdown(':small[Puja el fitxer amb els nous moviments a classificar.]')
-    uploaded_file = st.file_uploader('', type='xml',
+    uploaded_file = st.file_uploader('_', type='xml',
                                     accept_multiple_files=False,
                                     label_visibility='collapsed')
     
@@ -78,8 +85,7 @@ new, repeated, controversial = compare_movements(uploaded_movements, db)
 
 # Manage
 # 'manage_controversial' is set in manage_controversial_movements() 
-manage_controversial = ss.get('manage_controversial', not controversial.empty)
-if manage_controversial:
+if ss.get('manage_controversial', not controversial.empty):
     manage_controversial_movements(controversial)
 
 # Update movements
@@ -111,14 +117,17 @@ if st.toggle('Mostra els nous moviments.'):
 # AUTOCOMPLETE
 # ------------------------------------------------------------------------------
 
-# Get manage_autocomplete flag
-
-
+# Set up
 autocompletable = get_autocompletable(ss['known_movements'])
-to_be_auto = to_be_clsf[to_be_clsf['Nom'].isin(list(autocompletable.keys()))]
-print(to_be_auto)
-print(*[f'{name} -> {autocompletable[name]}' for name in to_be_auto['Nom']], sep='\n')
+mask_auto = to_be_clsf['Nom'].isin(list(autocompletable.keys()))
+to_be_auto = to_be_clsf[mask_auto]
 
+# Manage it
+if ss.get('manage_autocomplete', not to_be_auto.empty):
+    manage_autocomplete(to_be_auto, autocompletable)
+
+if 'autocompleted' in ss:
+    to_be_clsf = to_be_clsf[~mask_auto]
 # ------------------------------------------------------------------------------
 # CLASSIFICATION
 # ------------------------------------------------------------------------------
