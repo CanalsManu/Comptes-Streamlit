@@ -1,5 +1,10 @@
 import pandas as pd
 import streamlit as st
+from back.format import (
+     build_clsf_badges,
+     format_date,
+     format_import
+)
 ss = st.session_state
 
 def get_known_movements(names, categories):
@@ -31,7 +36,7 @@ def get_autocompletable(known_movements):
     }
 
 
-@st.dialog('Autcompletar', dismissible=False)
+@st.dialog('Autocompletar', dismissible=True, width='medium')
 def manage_autocomplete(to_be_auto, autocompletable):
     """
     Ask to autcomplete or ignore known movements (optionally show them).
@@ -62,8 +67,15 @@ def manage_autocomplete(to_be_auto, autocompletable):
 
     # Display 
     if st.toggle('Mostra els moviments autocompletables.'):
-        st.dataframe(to_be_auto, hide_index=True)
-        st.write(autocompletable)
+
+        show_to_be_auto = to_be_auto.copy()
+        show_to_be_auto['Categories'] = show_to_be_auto['Nom'].map(autocompletable)
+        
+        show_to_be_auto['Data'] = show_to_be_auto['Data'].apply(format_date)
+        show_to_be_auto['Import'] = show_to_be_auto['Import'].apply(format_import)
+        show_to_be_auto['Categories'] = show_to_be_auto['Categories'].apply(build_clsf_badges)
+
+        st.table(show_to_be_auto, hide_index=True, border = 'horizontal')
 
 
 def autocomplete(to_be_auto, autocompletable):
@@ -74,4 +86,7 @@ def autocomplete(to_be_auto, autocompletable):
     in st.session_state['autocompleted'] to be used in:
         back.classify_movement_dialog.add_classification_to_db()
     """
-    pass
+    
+    autocompleted = to_be_auto.copy()
+    autocompleted['Categories'] = autocompleted['Nom'].map(autocompletable)
+    ss['autocompleted'] = autocompleted

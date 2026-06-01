@@ -166,3 +166,8 @@ TODO:
     - "Known items found"
     - Autocomplete & Ignora
     - Show known found
+- DONE:
+    - autocomplete flavour 1
+- TODO? Add autocomplete on final display of classification too?
+- NEXT:
+     - autocomplete flavour 2: autocomplete rest of movements as you are classifying

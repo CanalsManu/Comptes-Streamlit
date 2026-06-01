@@ -90,6 +90,7 @@ def _clsf_end_page(movements):
         st.balloons()
         st.text('CLASSIFICACIÓ FETA!', text_alignment='center',
                 width='stretch')
+        # TODO?: add autocopleted movements too to displat
         show_current_clsf(movements, results)
         st.stop()
 
@@ -106,18 +107,25 @@ def add_classification_to_db(movements, results):
     """
     Add classification (results) of the movements to the database. Basically:
     - add movements (safely?)
+        - include autocompleted movements (if any)
     - flag that we are done
     - close
     """
-    # add
+    # dataframes (terms) to be added (concatenated)
     db = ss['db']
     movements['Categories'] = results
+    if 'autocompleted' in ss:
+        terms = [db, movements, ss['autocompleted']]
+    else:
+        terms = [db, movements]
+
 
     col_to_datetime = lambda col: pd.to_datetime(col,format="%d/%m/%Y")
-    merged = pd.concat([db, movements], ignore_index=True)
+    merged = pd.concat(terms, ignore_index=True)
     sorted_db = merged.sort_values(by='Data', key=col_to_datetime,
                                    ascending=False).reset_index(drop=True)
 
+    # flag
     ss['db'] = sorted_db
     ss['classification']['status'] = 'done'
 

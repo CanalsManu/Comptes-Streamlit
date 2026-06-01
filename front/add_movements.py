@@ -153,6 +153,7 @@ if 'classification' not in ss:
 elif ss['classification']['status'] == 'done':
     if col.button('Classificació feta! Mostra-la.', width='stretch',
                   type='tertiary', shortcut='Enter'):
+        # TODO?: add autocompleted movements to show too
         show_classification(to_be_clsf)
 
 else:
