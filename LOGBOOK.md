@@ -159,3 +159,10 @@ TODO:
     - if autocomplete -> how to autocomplete?
         - pass it to classify movement maybe?
         - or keep it in sepearate df and when db is updated update those too? <- this looks better
+
+01/06/2026
+- Added ss = st.session_state in many places ot keep the code tidy
+- Continue autocomplete:
+    - "Known items found"
+    - Autocomplete & Ignora
+    - Show known found

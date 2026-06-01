@@ -1,6 +1,13 @@
 import streamlit as st
 from datetime import date as ddate
 import pandas as pd
+from back.format import (
+    build_clsf_badges,
+    format_date,
+    weekday_from_date,
+    date_str_to_tuple,
+    format_import
+)
 ss = st.session_state
 
 
@@ -118,10 +125,10 @@ def add_classification_to_db(movements, results):
 def show_current_clsf(movements, results):
     """Show table to double check classifications at end page."""
     show_moves = movements.copy()
-    show_moves['Data'] = show_moves['Data'].map(_format_date)
-    show_moves['Import'] = show_moves['Import'].map(_format_import)
+    show_moves['Data'] = show_moves['Data'].map(format_date)
+    show_moves['Import'] = show_moves['Import'].map(format_import)
     show_moves['Categories'] = [
-        _build_clsf_badges(res, amount)
+        build_clsf_badges(res, amount)
         for res, amount in zip(results, movements['Import'])
     ]
     st.table(
@@ -129,22 +136,6 @@ def show_current_clsf(movements, results):
         hide_index=True,
         border='horizontal'
     )
-
-
-def _format_date(date_str):
-    """Format 'dd/mm/yyyy' into 'weekday, d de m. de yyyy'."""
-    d, m, y = date_str_to_tuple(date_str)
-
-    # Weekday
-    weekday_idx = weekday_from_date(date_str)
-    weekday_names = ['Dl.', 'Dt.', 'Dc.', 'Dj.', 'Dv.', 'Ds.', 'Dg.']
-
-    # Month
-    de_month_names = ['de gen.', 'de feb.', 'de mar.', "d'abr.",
-                   'de mai.', 'de jun.', 'de jul.', "d'ago.",
-                   'de set.', "d'oct.", 'de nov.', 'de dec.']
-    return f'{weekday_names[weekday_idx]}, {d} {de_month_names[m-1]} de {y}'
-
 
 
 def _clsf_progress(n):
@@ -200,30 +191,11 @@ def _clsf_curr_res_info(curr_move):
     curr_idx = ss['classification']['curr_idx']
     curr_res = ss['classification']['results'][curr_idx]
 
-    info_str = _build_clsf_badges(curr_res, curr_move['Import'])
+    info_str = build_clsf_badges(curr_res, curr_move['Import'])
 
     cont = st.container(width='stretch', horizontal_alignment='center',
                         vertical_alignment='center', horizontal=True)
     cont.markdown(info_str)
-
-
-def _build_clsf_badges(curr_res, amount):
-    """Return string with markdown to render badges."""
-    # Get info
-    if curr_res is None:
-        show_res = 'despeses-' if amount <= 0 else 'ingressos-'
-    else:
-        show_res = curr_res
-
-    # Display info
-    badges_md = []
-    first_color = {'ingressos': 'green', 'despeses': 'red'}
-    for idx, category in enumerate(show_res.split('-')):
-        color = first_color[category] if idx==0 else 'grey'
-        badges_md.append(f':{color}-badge[{category}]')
-        
-    sep = ' -> '
-    return sep.join(badges_md)
 
 
 def _clsf_movement_info(curr_move):
@@ -236,13 +208,7 @@ def _clsf_movement_info(curr_move):
     with move_cols[1]:
         cont = st.container(vertical_alignment='center', height='stretch')
         cont.write(curr_move['Nom'])
-        cont.write(_format_import(curr_move['Import']))
-
-
-def _format_import(amount):
-    import_str = ':green[+' if amount > 0 else ':red[-'
-    import_str += f'{abs(amount):.2f}' + ']'
-    return import_str
+        cont.write(format_import(curr_move['Import']))
 
 
 def month_calendar(month, year, hightlight=None):
@@ -314,18 +280,7 @@ def days_in_month(month, year):
     if month == 12:
         return 31
     return (ddate(year, month+1, 1) - ddate(year, month, 1)).days
-
-def weekday_from_date(date):
-    """Date in format 'dd/mm/yyyy' or (d, m, y) to weekday (mon:0, sun:6)."""
-    if isinstance(date, str):
-        date = date_str_to_tuple(date)
-    return ddate(date[2], date[1], date[0]).weekday()
-
-
-def date_str_to_tuple(date_str):
-    """Date in format (str) dd/mm/yyyy to (list[int]) (d, m, y)."""
-    return (int(date_str[:2]), int(date_str[3:5]), int(date_str[6:]))
-    
+   
 
 def _clsf_show_categories(curr_move):
     """
