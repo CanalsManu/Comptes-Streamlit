@@ -24,10 +24,7 @@ def init_dialog():
         check_clsf_tree(ss['clsf_tree'])
 
         st.rerun()
-
-    if st.button("Close"):
-        ss['db'] = None
-        st.rerun()
+        
 
 if 'db' not in ss:
     init_dialog()
