@@ -18,7 +18,7 @@ def get_known_movements(names, categories):
 
 def get_autocompletable(known_movements):
     """
-    Return known 'autocompletable' movements: only one known category.
+    Return known 'autocompletable' movements: only with one known category.
     
     Output is a disctionary where keys are the unique names and values are the
     (dashed) categories.

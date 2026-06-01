@@ -1,13 +1,14 @@
 import streamlit as st
 from datetime import date as ddate
 import pandas as pd
+ss = st.session_state
 
 
 MAX_CATEGORIES_PER_ROW = 4
 
 def start_classification(movements):
     """First call to classify_movements. Setting defaults."""
-    st.session_state['classification'] = {
+    ss['classification'] = {
         'status': 'in-progress',
         'results': [None] * movements.shape[0],
         'curr_idx': 0
@@ -31,7 +32,7 @@ def classify_movements(movements):
     """
     # Get current values
     n = movements.shape[0]
-    curr_idx = st.session_state['classification']['curr_idx']
+    curr_idx = ss['classification']['curr_idx']
 
     # End page
     if curr_idx >= n:
@@ -66,7 +67,7 @@ def _clsf_end_page(movements):
         - toggle to see/double check clsf
     """
     # Set up
-    results = st.session_state['classification']['results']
+    results = ss['classification']['results']
     completed = all([_is_completed(res) for res in results])
 
     if completed:
@@ -78,7 +79,7 @@ def _clsf_end_page(movements):
         disabled = True
 
     # Display after add movements
-    if st.session_state['classification']['status'] == 'done':
+    if ss['classification']['status'] == 'done':
         st.balloons()
         st.text('CLASSIFICACIÓ FETA!', text_alignment='center',
                 width='stretch')
@@ -102,7 +103,7 @@ def add_classification_to_db(movements, results):
     - close
     """
     # add
-    db = st.session_state['db']
+    db = ss['db']
     movements['Categories'] = results
 
     col_to_datetime = lambda col: pd.to_datetime(col,format="%d/%m/%Y")
@@ -110,8 +111,8 @@ def add_classification_to_db(movements, results):
     sorted_db = merged.sort_values(by='Data', key=col_to_datetime,
                                    ascending=False).reset_index(drop=True)
 
-    st.session_state['db'] = sorted_db
-    st.session_state['classification']['status'] = 'done'
+    ss['db'] = sorted_db
+    ss['classification']['status'] = 'done'
 
 
 def show_current_clsf(movements, results):
@@ -148,13 +149,13 @@ def _format_date(date_str):
 
 def _clsf_progress(n):
     """Show progress. Array of buttons showing status, on_click jump to idx."""
-    curr_idx = st.session_state['classification']['curr_idx']
-    results = st.session_state['classification']['results']
+    curr_idx = ss['classification']['curr_idx']
+    results = ss['classification']['results']
     # st.progress(curr_idx/n)
 
     # Each button moves to taret_idx
     def _action(target_idx):
-        st.session_state['classification']['curr_idx'] = target_idx
+        ss['classification']['curr_idx'] = target_idx
 
     # Array of buttons
     cont = st.container(horizontal=True, horizontal_alignment='center',
@@ -196,8 +197,8 @@ def _choose_icon(is_curr_idx, completed):
 
 def _clsf_curr_res_info(curr_move):
     """Show current result under buttons."""
-    curr_idx = st.session_state['classification']['curr_idx']
-    curr_res = st.session_state['classification']['results'][curr_idx]
+    curr_idx = ss['classification']['curr_idx']
+    curr_res = ss['classification']['results'][curr_idx]
 
     info_str = _build_clsf_badges(curr_res, curr_move['Import'])
 
@@ -365,9 +366,9 @@ def _clsf_show_categories(curr_move):
 
     I am currently assuming top categories are ['despesses', 'ingressos']
     """
-    tree = st.session_state['clsf_tree']
-    curr_idx = st.session_state['classification']['curr_idx']
-    curr_res = st.session_state['classification']['results'][curr_idx]
+    tree = ss['clsf_tree']
+    curr_idx = ss['classification']['curr_idx']
+    curr_res = ss['classification']['results'][curr_idx]
 
     # Starting new classification
     if curr_res is None:
@@ -405,9 +406,9 @@ def _show_clsf_buttons(categories, highlight=None, top_category=None):
         - top_category: (optional) str, top category to append to curr_res.
                         Only to be used when curr_res = None.
     """
-    tree = st.session_state['clsf_tree']
-    curr_idx = st.session_state['classification']['curr_idx']
-    curr_res = st.session_state['classification']['results'][curr_idx]
+    tree = ss['clsf_tree']
+    curr_idx = ss['classification']['curr_idx']
+    curr_res = ss['classification']['results'][curr_idx]
 
     def _action(category):
         """Add choice to result. If still need to clasf -> add ash, else ->
@@ -426,12 +427,12 @@ def _show_clsf_buttons(categories, highlight=None, top_category=None):
         # Check if clasf is done
         subtree = get_with_multikey(tree, new_res.split('-'))
         if subtree is None: # No more clasf -> save and go next
-            st.session_state['classification']['results'][curr_idx] = new_res
-            st.session_state['classification']['curr_idx'] = _find_nxt_unclsf()
+            ss['classification']['results'][curr_idx] = new_res
+            ss['classification']['curr_idx'] = _find_nxt_unclsf()
 
         else: # More subcategories -> save with dash and show same idx
             new_res += '-'
-            st.session_state['classification']['results'][curr_idx] = new_res
+            ss['classification']['results'][curr_idx] = new_res
 
     # Show max num per row   
     for step_idx in range(0, len(categories), MAX_CATEGORIES_PER_ROW):
@@ -451,8 +452,8 @@ def _show_clsf_buttons(categories, highlight=None, top_category=None):
 
 def _find_nxt_unclsf():
     """Find next index with unclsf item."""
-    curr_idx = st.session_state['classification']['curr_idx']
-    results = st.session_state['classification']['results']
+    curr_idx = ss['classification']['curr_idx']
+    results = ss['classification']['results']
     for next_idx in range(curr_idx+1, len(results)):
         if results[next_idx] is None:
             return next_idx
@@ -466,7 +467,7 @@ def _clsf_nav_buttons(curr_idx, n):
     nav_cols = st.columns([1, 3, 1])
 
     def _go_left():
-        st.session_state['classification']['curr_idx'] -= 1 
+        ss['classification']['curr_idx'] -= 1 
     cont_left = nav_cols[0].container(horizontal_alignment='left')
     cont_left.button('', disabled = (curr_idx <= 0), on_click = _go_left,
                       type='tertiary', shortcut='Left')
@@ -475,7 +476,7 @@ def _clsf_nav_buttons(curr_idx, n):
         _clsf_progress(n)
 
     def _go_right():
-        st.session_state['classification']['curr_idx'] += 1 
+        ss['classification']['curr_idx'] += 1 
     cont_right = nav_cols[2].container(horizontal_alignment='right')
     cont_right.button('', disabled = (curr_idx  >= n), on_click = _go_right,
                       type='tertiary', shortcut='Right')
@@ -484,14 +485,14 @@ def _clsf_nav_buttons(curr_idx, n):
 @st.dialog('Classificació feta.', width='medium')
 def show_classification(movements):
     """Show classification"""
-    show_current_clsf(movements, st.session_state['classification']['results'])
+    show_current_clsf(movements, ss['classification']['results'])
 
 
 def _safe_get_curr_res(n, default=None):
     """Get current result if 0 <= curr_idx <= n-1 (n should be size)."""
-    curr_idx = st.session_state['classification']['curr_idx']
+    curr_idx = ss['classification']['curr_idx']
     if 0 <= curr_idx <= n-1:
-        return st.session_state['classification']['results'][curr_idx]
+        return ss['classification']['results'][curr_idx]
     else:
         return default
     

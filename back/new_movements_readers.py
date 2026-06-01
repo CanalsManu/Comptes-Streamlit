@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ET
 from datetime import datetime
 import streamlit as st
 import numpy as np
+ss = st.session_state
 
 
 def read_xml_to_df(path):
@@ -106,13 +107,13 @@ def manage_controversial_movements(movements):
     """
     # Starting values
     n = movements.shape[0]
-    if 'controversial_idx' not in st.session_state:
-        st.session_state['controversial_idx'] = 0
-        st.session_state['controversial_keep'] = [None] * n
+    if 'controversial_idx' not in ss:
+        ss['controversial_idx'] = 0
+        ss['controversial_keep'] = [None] * n
 
     # Current status
-    curr_idx = st.session_state['controversial_idx']
-    keep = st.session_state['controversial_keep']
+    curr_idx = ss['controversial_idx']
+    keep = ss['controversial_keep']
     curr_state = keep[curr_idx] if curr_idx < n else None
 
     # Info
@@ -131,13 +132,14 @@ def manage_controversial_movements(movements):
 
 def _controversial_end_page(movements):
     """Last 'page' on the controversial dialog."""
+
     _, col, _ = st.columns([1, 6, 1])
     col.button('Cap més moviment controversial.',
                width='stretch', type='tertiary')
 
     # only close if all answered
     answer_missing = any([
-        (item == None) for item in st.session_state['controversial_keep']
+        (item == None) for item in ss['controversial_keep']
     ])
 
     # Store selection in session, delete keys and flag out
@@ -145,15 +147,15 @@ def _controversial_end_page(movements):
                   disabled=answer_missing, shortcut='ENTER'):
         
         # Store results
-        mask = st.session_state['controversial_keep']
-        st.session_state['controversial_select'] = movements[mask]
+        mask = ss['controversial_keep']
+        ss['controversial_select'] = movements[mask]
 
         # Delete auxiliary vairables
-        del st.session_state['controversial_idx']
-        del st.session_state['controversial_keep']
+        del ss['controversial_idx']
+        del ss['controversial_keep']
 
         # this flag controls if dialog opens
-        st.session_state['manage_controversial'] = False
+        ss['manage_controversial'] = False
         st.rerun()
 
 
@@ -162,7 +164,7 @@ def _controversial_info():
 
     def switch_off_toggle():
         """Toggle programmatically."""
-        st.session_state['info_toggle'] = False
+        ss['info_toggle'] = False
 
     st.write('---')
     st.write('Controversials perque són del periode de temps de la base'
@@ -182,15 +184,15 @@ def _controversial_buttons(curr_idx, curr_state, n):
     with cols[0]:  # left
         cont_0 = st.container(horizontal_alignment='left')
         def _go_left():
-            st.session_state['controversial_idx'] = curr_idx - 1
+            ss['controversial_idx'] = curr_idx - 1
         cont_0.button('', disabled = curr_idx <= 0, on_click=_go_left,
                       shortcut='Left', type='tertiary')
     
     with cols[1]:  # ignora
         cont_1 = st.container(horizontal_alignment='right')
         def _go_right_and_ignore():
-            st.session_state['controversial_keep'][curr_idx] = False
-            st.session_state['controversial_idx'] = curr_idx + 1
+            ss['controversial_keep'][curr_idx] = False
+            ss['controversial_idx'] = curr_idx + 1
         cont_1.button(
             'Ignora',
             width=main_btn_w,
@@ -203,8 +205,8 @@ def _controversial_buttons(curr_idx, curr_state, n):
     with cols[2]:  # per calificar
         cont_2 = st.container(horizontal_alignment='left')
         def _go_right_and_clasf():
-            st.session_state['controversial_keep'][curr_idx] = True
-            st.session_state['controversial_idx'] = curr_idx + 1
+            ss['controversial_keep'][curr_idx] = True
+            ss['controversial_idx'] = curr_idx + 1
         cont_2.button(
             'Per calificar',
             on_click=_go_right_and_clasf,
@@ -217,7 +219,7 @@ def _controversial_buttons(curr_idx, curr_state, n):
     with cols[3]:  # right
         cont_3 = st.container(horizontal_alignment='right')
         def _go_right():
-            st.session_state['controversial_idx'] = curr_idx + 1
+            ss['controversial_idx'] = curr_idx + 1
         cont_3.button('', disabled = curr_idx >= n, on_click=_go_right,
                       shortcut='Right', type='tertiary')
 

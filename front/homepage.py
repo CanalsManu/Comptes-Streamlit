@@ -5,6 +5,7 @@ from back.classification_tree import (
     check_clsf_tree
 )
 from back.known_movements import get_known_movements
+ss = st.session_state
 
 @st.dialog("Hola!", dismissible=False)
 def init_dialog():
@@ -17,20 +18,20 @@ def init_dialog():
         clsf = db.pop('Classificació')
         clsf = clsf[~clsf.isnull()]  # removing nans from df
 
-        st.session_state['db'] = db
-        st.session_state['known_movements'] = known_movements
-        st.session_state['clsf_tree'] = dashed_to_tree(clsf)
-        check_clsf_tree(st.session_state['clsf_tree'])
+        ss['db'] = db
+        ss['known_movements'] = known_movements
+        ss['clsf_tree'] = dashed_to_tree(clsf)
+        check_clsf_tree(ss['clsf_tree'])
 
         st.rerun()
 
     if st.button("Close"):
-        st.session_state['db'] = None
+        ss['db'] = None
         st.rerun()
 
-if 'db' not in st.session_state:
+if 'db' not in ss:
     init_dialog()
 else:
     st.write(':)')
     st.write('session state')
-    st.write(st.session_state)
+    st.write(ss)
