@@ -99,7 +99,18 @@ def _clsf_end_page(movements):
     st.button('Afegeix a la base de dades', disabled=disabled,
                 type='primary', width='stretch',
                 on_click=add_classification_to_db, args=(movements, results))
-    if st.toggle('Revisa la classificació'):
+    
+    cont = st.container(horizontal=True, vertical_alignment='center')
+    display_toggle = cont.toggle('Revisa la classificació', key='clsf_end_page_toggle')
+
+    def switch_toggle():
+        if ss['clsf_end_page_toggle'] == True:
+            ss['clsf_end_page_toggle'] = False
+        else:
+            ss['clsf_end_page_toggle'] = True   
+    cont.button('', type='tertiary', shortcut='Tab', on_click=switch_toggle)
+
+    if display_toggle:
         show_current_clsf(movements, results)    
 
 

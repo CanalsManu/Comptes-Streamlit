@@ -65,8 +65,21 @@ def manage_autocomplete(to_be_auto, autocompletable):
         ss['manage_autocomplete'] = False
         st.rerun()
 
-    # Display 
-    if st.toggle('Mostra els moviments autocompletables.'):
+    # Display with control button (tab)
+    cont = st.container(horizontal=True, vertical_alignment='center')
+    display_toggle = cont.toggle('Mostra els moviments autocompletables.',
+                                 key='autocomplete_toggle')
+
+    # Control button
+    def switch_toggle():
+        if ss['autocomplete_toggle'] == True:
+            ss['autocomplete_toggle'] = False
+        else:
+            ss['autocomplete_toggle'] = True   
+    cont.button('', type='tertiary', shortcut='Tab', on_click=switch_toggle)
+
+    # Display
+    if display_toggle:
 
         show_to_be_auto = to_be_auto.copy()
         show_to_be_auto['Categories'] = show_to_be_auto['Nom'].map(autocompletable)

@@ -168,6 +168,7 @@ TODO:
     - Show known found
 - DONE:
     - autocomplete flavour 1
+    - added tab option to show and hide display
 - TODO? Add autocomplete on final display of classification too?
 - NEXT:
      - autocomplete flavour 2: autocomplete rest of movements as you are classifying
