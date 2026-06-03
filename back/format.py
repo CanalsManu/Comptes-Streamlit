@@ -1,5 +1,5 @@
 from datetime import date as ddate
-
+import pandas as pd
 
 def build_clsf_badges(classification, amount = None):
     """Get md string to render dashed classification as badges with arrows."""
@@ -55,3 +55,11 @@ def format_import(amount):
     import_str = ':green[+' if amount > 0 else ':red[-'
     import_str += f'{abs(amount):.2f}' + ']'
     return import_str
+
+
+def get_start_end_of_series(series):
+    """Get start and end date of given pd.series with dates DD/MM/YYYY."""
+    datetimes = pd.to_datetime(series, format='%d/%m/%Y')
+    start = datetimes.min().strftime('%d/%m/%Y')
+    end = datetimes.max().strftime('%d/%m/%Y')
+    return start, end

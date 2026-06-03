@@ -1,7 +1,8 @@
 import streamlit as st
 import os
 from back.save_progress_to_file import gather_comptes_in_df
-
+from back.format import get_start_end_of_series
+ss = st.session_state
 
 with st.sidebar:
     # Navigation
@@ -21,10 +22,20 @@ with st.sidebar:
     
     # Download
     with st.sidebar.container(key="sidebar_bottom"):
-        data = gather_comptes_in_df() if 'db' in st.session_state else ''
+        if 'db' in ss:
+            data = gather_comptes_in_df()
+            start_date, end_date = get_start_end_of_series(ss['db']['Data'])
+            file_name = 'comptes_del_{}_al_{}.csv'.format(
+                start_date.replace('/', '-'),
+                end_date.replace('/', '-')
+            )
+        else:
+            data = ''
+            file_name = 'comptes_(buits).csv'
+        
         st.download_button('Descarrega els comptes',
                            data=data,
-                           file_name='comptes.csv',
+                           file_name=file_name,
                            type='primary',
                            icon=':material/download:')
 
@@ -38,8 +49,8 @@ with st.sidebar:
     """)
 
 
-if 'assigned_at_refresh' in st.session_state:
+if 'assigned_at_refresh' in ss:
     pg.run()
 else:  # Refreshed, assign flag and run homepage
-    st.session_state['assigned_at_refresh'] = True
+    ss['assigned_at_refresh'] = True
     st.switch_page(homepage)

@@ -172,3 +172,10 @@ TODO:
 - TODO? Add autocomplete on final display of classification too?
 - NEXT:
      - autocomplete flavour 2: autocomplete rest of movements as you are classifying
+
+03/06/2026
+- POSSIBLE TASKS:
+    - clean homepage after uploading comptes
+        - show links to other pages in nice layout
+        - offer the option to change comptes file? -> care with the cleanup this requires
+    - name of the downloaded file
