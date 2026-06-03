@@ -117,6 +117,7 @@ if st.toggle('Mostra els nous moviments.'):
 # AUTOCOMPLETE
 # ------------------------------------------------------------------------------
 
+
 # Set up
 autocompletable = get_autocompletable(ss['known_movements'])
 mask_auto = to_be_clsf['Nom'].isin(list(autocompletable.keys()))
@@ -128,6 +129,8 @@ if ss.get('manage_autocomplete', not to_be_auto.empty):
 
 if 'autocompleted' in ss:
     to_be_clsf = to_be_clsf[~mask_auto]
+
+
 # ------------------------------------------------------------------------------
 # CLASSIFICATION
 # ------------------------------------------------------------------------------

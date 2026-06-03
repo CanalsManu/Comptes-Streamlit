@@ -178,4 +178,7 @@ TODO:
     - clean homepage after uploading comptes
         - show links to other pages in nice layout
         - offer the option to change comptes file? -> care with the cleanup this requires
-    - name of the downloaded file
+    - name of the downloaded file (DONE)
+
+- BUG: pressing ENTER clicks whatever is selected in the browser
+    - possible fix: make and hide a button bound to ENTER

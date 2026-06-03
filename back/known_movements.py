@@ -3,7 +3,8 @@ import streamlit as st
 from back.format import (
      build_clsf_badges,
      format_date,
-     format_import
+     format_import,
+     format_database
 )
 ss = st.session_state
 
@@ -36,7 +37,7 @@ def get_autocompletable(known_movements):
     }
 
 
-@st.dialog('Autocompletar', dismissible=True, width='medium')
+@st.dialog('Autocompletar', dismissible=False, width='medium')
 def manage_autocomplete(to_be_auto, autocompletable):
     """
     Ask to autcomplete or ignore known movements (optionally show them).
@@ -56,12 +57,14 @@ def manage_autocomplete(to_be_auto, autocompletable):
     # Buttons
     cols = st.columns([1, 1])
     
-    if cols[0].button('Autcompleta', width='stretch', shortcut='1'):
+    if cols[0].button('Autcompleta', width='stretch',
+                      shortcut='1', type='primary'):
         autocomplete(to_be_auto, autocompletable)
         ss['manage_autocomplete'] = False
         st.rerun()
     
-    if cols[1].button('Ignora', width='stretch', shortcut='2'):
+    if cols[1].button('Ignora', width='stretch',
+                      shortcut='2', type='primary'):
         ss['manage_autocomplete'] = False
         st.rerun()
 
@@ -83,10 +86,8 @@ def manage_autocomplete(to_be_auto, autocompletable):
 
         show_to_be_auto = to_be_auto.copy()
         show_to_be_auto['Categories'] = show_to_be_auto['Nom'].map(autocompletable)
-        
-        show_to_be_auto['Data'] = show_to_be_auto['Data'].apply(format_date)
-        show_to_be_auto['Import'] = show_to_be_auto['Import'].apply(format_import)
-        show_to_be_auto['Categories'] = show_to_be_auto['Categories'].apply(build_clsf_badges)
+
+        show_to_be_auto = format_database(show_to_be_auto) 
 
         st.table(show_to_be_auto, hide_index=True, border = 'horizontal')
 

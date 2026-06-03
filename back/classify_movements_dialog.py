@@ -6,8 +6,10 @@ from back.format import (
     format_date,
     weekday_from_date,
     date_str_to_tuple,
-    format_import
+    format_import,
+    format_database
 )
+from back.utils import sort_df_by_date
 ss = st.session_state
 
 
@@ -90,11 +92,21 @@ def _clsf_end_page(movements):
         st.balloons()
         st.text('CLASSIFICACIÓ FETA!', text_alignment='center',
                 width='stretch')
-        # TODO?: add autocopleted movements too to displat
-        show_current_clsf(movements, results)
+
+        display_df = movements.copy()
+        display_df['Categories'] = results
+        if 'autocompleted' in ss:
+            display_df = pd.concat([display_df, ss['autocompleted']], ignore_index=True)
+            display_df = sort_df_by_date(display_df)
+
+        display_df = format_database(display_df)
+
+        st.table(display_df, hide_index=True, border='horizontal')
+
+        # show_current_clsf(movements, results)
         st.stop()
 
-    # Display before adding movements
+    # Display before adding movements (do not display autocompleted here)
     st.text(info_text)
     st.button('Afegeix a la base de dades', disabled=disabled,
                 type='primary', width='stretch',
@@ -111,8 +123,11 @@ def _clsf_end_page(movements):
     cont.button('', type='tertiary', shortcut='Tab', on_click=switch_toggle)
 
     if display_toggle:
-        show_current_clsf(movements, results)    
-
+        display_df = movements.copy()
+        display_df['Categories'] = results
+        display_df = format_database(display_df)
+        st.table(display_df, hide_index=True, border='horizontal')
+        
 
 def add_classification_to_db(movements, results):
     """
@@ -130,11 +145,8 @@ def add_classification_to_db(movements, results):
     else:
         terms = [db, movements]
 
-
-    col_to_datetime = lambda col: pd.to_datetime(col,format="%d/%m/%Y")
     merged = pd.concat(terms, ignore_index=True)
-    sorted_db = merged.sort_values(by='Data', key=col_to_datetime,
-                                   ascending=False).reset_index(drop=True)
+    sorted_db = sort_df_by_date(merged)
 
     # flag
     ss['db'] = sorted_db
@@ -459,7 +471,16 @@ def _clsf_nav_buttons(curr_idx, n):
 @st.dialog('Classificació feta.', width='medium')
 def show_classification(movements):
     """Show classification"""
-    show_current_clsf(movements, ss['classification']['results'])
+    # Gather results
+    display_df = movements.copy()
+    display_df['Categories'] = ss['classification']['results']
+    if 'autocompleted' in ss:
+        display_df = pd.concat([display_df, ss['autocompleted']], ignore_index=True)
+        display_df = sort_df_by_date(display_df)
+
+    # Display
+    display_df = format_database(display_df)
+    st.table(display_df, hide_index=True, border='horizontal')
 
 
 def _safe_get_curr_res(n, default=None):
@@ -478,3 +499,5 @@ def get_with_multikey(d, keys):
     multi_key = ''.join(f'["{k}"]' for k in keys)
     result = eval('d'+multi_key)
     return result
+
+

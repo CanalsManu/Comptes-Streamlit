@@ -2,7 +2,11 @@ from datetime import date as ddate
 import pandas as pd
 
 def build_clsf_badges(classification, amount = None):
-    """Get md string to render dashed classification as badges with arrows."""
+    """
+    Get md string to render dashed classification as badges with arrows.
+    
+    amount is used when classification is None.
+    """
 
     # Get info
     if classification is None:
@@ -63,3 +67,33 @@ def get_start_end_of_series(series):
     start = datetimes.min().strftime('%d/%m/%Y')
     end = datetimes.max().strftime('%d/%m/%Y')
     return start, end
+
+
+def format_dataframe(df, columns, formats):
+    """Iteratiely apply function in formats to column name in columns."""
+    assert len(columns) == len(formats)
+
+    formated = df.copy()
+    for col_name, format_func in zip(columns, formats):
+        formated[col_name] = formated[col_name].apply(format_func)
+
+    return formated
+
+
+def format_database(db,
+                    fdate = format_date, fname = lambda x: x,
+                    fimport = format_import, fcategories = build_clsf_badges):
+    """
+    Wrap format_dataframe() for df with Data, Nom, Import and Categories.
+    
+    Expected input formats in db:
+        - data: (str) dd/mm/yyyy
+        - nom: (str) any
+        - import: (float) any
+        - categories: (str) DASHED categories
+    """
+    return format_dataframe(
+        db,
+        columns=['Data', 'Nom', 'Import', 'Categories'],
+        formats=[fdate, fname, fimport, fcategories]
+    )
