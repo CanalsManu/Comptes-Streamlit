@@ -15,18 +15,9 @@ ss = st.session_state
 
 MAX_CATEGORIES_PER_ROW = 4
 
-def start_classification(movements):
-    """First call to classify_movements. Setting defaults."""
-    print('Comença la classificació (on click)')
-    ss['classification'] = {
-        'status': 'in-progress',
-        'results': [None] * movements.shape[0],
-        'curr_idx': 0
-    }
-    classify_movements(movements)
 
-
-@st.dialog(':small[Classificant...]', width='medium', dismissible=True)
+@st.dialog(':small[Classificant...]', width='medium', dismissible=True,
+           on_dismiss='rerun')
 def classify_movements(movements):
     """
     Dialog to classify movements.
@@ -130,6 +121,7 @@ def _clsf_end_page(movements):
     if display_toggle:
         display_df = movements.copy()
         display_df['Categories'] = results
+
         display_df = format_database(display_df)
         st.table(display_df, hide_index=True, border='horizontal')
         

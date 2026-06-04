@@ -214,3 +214,6 @@ TODO:
     - if enter is not bound to anything, it clicks on the focused item
     - this can click random buttons you do not want (like close button)
     - SOLUTION: have it bound to something (we have it bind to the background one)
+
+TASKS:
+    - format better the controversials

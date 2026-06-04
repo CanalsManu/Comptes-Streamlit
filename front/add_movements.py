@@ -8,8 +8,7 @@ from back.new_movements_readers import (
 )
 from back.classify_movements_dialog import (
     classify_movements,
-    show_classification,
-    start_classification
+    show_classification
 )
 from back.fake_file_uploader import fake_file_uploader
 from back.known_movements import (
@@ -171,21 +170,12 @@ if 'classification' not in ss:
 
 elif ss['classification']['status'] == 'done':
     if col.button('Classificació feta! Mostra-la.', width='stretch',
-                  type='tertiary', shortcut='Enter',
-                  on_click=lambda: print('Mostra classificació (on click)')):
-        # TODO?: add autocompleted movements to show too
-        print('Mostra classificació (if block)')
+                  type='tertiary', shortcut='Enter'):
         show_classification(to_be_clsf)
 
 else:
     if col.button('Continua la classificació', width='stretch',
-                  type='secondary',
-                  shortcut='enter',
-                  on_click=lambda: print('Continua la classificació (on click)')
+                  type='secondary', shortcut='enter'
         ) or ('force_start_classification' in ss):
-        print('Continua la classificació (if block)')
         ss.pop('force_start_classification', 0)
         classify_movements(to_be_clsf)
-
-
-st.button('dummy', shortcut='8', on_click=lambda: print('dummy pressed'))
