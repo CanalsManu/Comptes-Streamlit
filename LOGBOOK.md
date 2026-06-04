@@ -217,3 +217,15 @@ TODO:
 
 TASKS:
     - format better the controversials
+    - do the autocomplete #2
+    - clean homepage (see 03/06)
+    - use web for real movements
+    - deploy if it works
+    - continue developing on branches from now on then
+
+    - (next)
+    - do basic analysis?
+    - visualization of classification tree?
+    - option to create your own classification tree?
+    - modify classification tree?
+    - what if classification tree doesn't have ingressos and despesses as first categories?
