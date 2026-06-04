@@ -148,19 +148,44 @@ if 'classification' not in ss:
     else:
         name, disabled = 'Comença la classificació', False
 
-    # use on_click to force rerun
-    col.button(name, width='stretch', type='primary', disabled=disabled,
-               on_click=start_classification, args=[to_be_clsf],
-               shortcut='Enter')
+    # use on_click to force rerun, but only bind to enter if autocomplete is
+    # closed
+    # autcomplete_opened = ss.get('manage_autocomplete', True)
+    # shortcut = None if autcomplete_opened else 'Enter'
+    # col.button(name, width='stretch', type='primary', disabled=disabled,
+    #            on_click=start_classification, args=[to_be_clsf],
+    #            shortcut=shortcut)
+    
+    # set up and rerun
+    autcomplete_opened = ss.get('manage_autocomplete', True)
+    shortcut = None if autcomplete_opened else 'Enter'
+    if col.button(name, width='stretch', type='primary', disabled=disabled,
+                  shortcut=shortcut):
+        ss['classification'] = {
+        'status': 'in-progress',
+        'results': [None] * to_be_clsf.shape[0],
+        'curr_idx': 0
+        }
+        ss['force_start_classification'] = None
+        st.rerun()
 
 elif ss['classification']['status'] == 'done':
     if col.button('Classificació feta! Mostra-la.', width='stretch',
-                  type='tertiary', shortcut='Enter'):
+                  type='tertiary', shortcut='Enter',
+                  on_click=lambda: print('Mostra classificació (on click)')):
         # TODO?: add autocompleted movements to show too
+        print('Mostra classificació (if block)')
         show_classification(to_be_clsf)
 
 else:
     if col.button('Continua la classificació', width='stretch',
-                  type='secondary', shortcut='Enter'):
+                  type='secondary',
+                  shortcut='enter',
+                  on_click=lambda: print('Continua la classificació (on click)')
+        ) or ('force_start_classification' in ss):
+        print('Continua la classificació (if block)')
+        ss.pop('force_start_classification', 0)
         classify_movements(to_be_clsf)
 
+
+st.button('dummy', shortcut='8', on_click=lambda: print('dummy pressed'))

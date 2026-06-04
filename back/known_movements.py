@@ -56,15 +56,15 @@ def manage_autocomplete(to_be_auto, autocompletable):
 
     # Buttons
     cols = st.columns([1, 1])
-    
-    if cols[0].button('Autcompleta', width='stretch',
-                      shortcut='1', type='primary'):
+
+    if cols[0].button('Autcompleta', width='stretch', shortcut='enter',
+                      type='primary'):
         autocomplete(to_be_auto, autocompletable)
         ss['manage_autocomplete'] = False
         st.rerun()
     
-    if cols[1].button('Ignora', width='stretch',
-                      shortcut='2', type='primary'):
+    if cols[1].button('Ignora', width='stretch', shortcut='esc',
+                      type='primary'):
         ss['manage_autocomplete'] = False
         st.rerun()
 

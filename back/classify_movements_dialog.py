@@ -17,6 +17,7 @@ MAX_CATEGORIES_PER_ROW = 4
 
 def start_classification(movements):
     """First call to classify_movements. Setting defaults."""
+    print('Comença la classificació (on click)')
     ss['classification'] = {
         'status': 'in-progress',
         'results': [None] * movements.shape[0],
@@ -25,7 +26,7 @@ def start_classification(movements):
     classify_movements(movements)
 
 
-@st.dialog(':small[Classificant...]', width='medium', on_dismiss='rerun')
+@st.dialog(':small[Classificant...]', width='medium', dismissible=True)
 def classify_movements(movements):
     """
     Dialog to classify movements.
@@ -51,18 +52,22 @@ def classify_movements(movements):
     else:
         curr_move = movements.iloc[curr_idx]
         _clsf_movement_info(curr_move)
-
-        # Classification info
         st.space()
-        _clsf_show_categories(curr_move)
 
         # Add curr_classification info
         _clsf_curr_res_info(curr_move)
 
-    # Navigation buttons and progress
-    st.space()
-    _clsf_nav_buttons(curr_idx, n)
+        # Classification info
+        _clsf_show_categories(curr_move)
 
+
+    with st.container(gap=None, horizontal_alignment='center'):
+        # Navigation buttons and progress
+        _clsf_nav_buttons(curr_idx, n)
+
+        # if st.button(':yellow-badge[Desa i tanca]', shortcut='esc',
+        #                          type='tertiary'):
+        #     st.rerun()
 
 def _clsf_end_page(movements):
     """

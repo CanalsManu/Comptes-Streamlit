@@ -182,3 +182,35 @@ TODO:
 
 - BUG: pressing ENTER clicks whatever is selected in the browser
     - possible fix: make and hide a button bound to ENTER
+    - on autocomplete the background has comença classificació with bind enter, so it triggers that button from the autocomplete dialog
+    - I tihnk this is the general issue (also in other states): that enter triggers the background button
+    - fix then?
+        - unbind?
+        - find and rebind based on dialog windows being open?
+        - fixed the one with autocomplete, but now the blinking is still there...
+        - slowly getting there... figure out what is getting called when you press enter
+
+04/06/2026
+- ON THE BUG of enter:
+    - when ENTER is bound somewhere, the focused item is not clicked. When enter is not bound, the focused item is clicked.
+    - separately, having a dialog open and clicking a background button with shortcut (enter) closes the dialog -> CONFIRMED with dummy button on the backgroudn shortcut to 8 (doesn't work for the autocomplete dialog)
+    - maybe clicking with shortcut outisde of dialog only closes dialog when dialog is dissmissable
+    - also triggering background button triggers rerun of the whole thing
+    - maybe the blinking issue comes from the dialog being opeend from two different lines
+    - so, i have two issues here:
+        1. clicking a background button with shortcut while dialog is opened closes the dialog
+        2. focused items when enter is unbound are clicked with enter (apparently dosen't apply to toggles)
+
+- BUG FIXED. Lessons learned:
+    1. On blinking and vackground clicks
+    - background button click (with shortcut) forces rerun
+        - dialog not closed automatically (regardless of dismissable)
+        - dialog closed based on effects of rerun
+    - dialog blinked because on rerun it was opened from ANOTHER line (another call to classify_movements())
+    - SOLUTION (for clasf): open the dialog from the same call
+    - SOLUTION (for auto): bind to enter autocomplete + unbind the one to comença... 
+
+    2. On binding enter
+    - if enter is not bound to anything, it clicks on the focused item
+    - this can click random buttons you do not want (like close button)
+    - SOLUTION: have it bound to something (we have it bind to the background one)
