@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ET
 from datetime import datetime
 import streamlit as st
 import numpy as np
+from back.format import show_move_w_calendar
 ss = st.session_state
 
 
@@ -124,7 +125,8 @@ def manage_controversial_movements(movements):
     if curr_idx >= n:
         _controversial_end_page(movements)
     else:
-        st.dataframe(pd.DataFrame(movements.iloc[curr_idx]).T, hide_index=True)
+        show_move_w_calendar(movements.iloc[curr_idx])
+        # st.dataframe(pd.DataFrame(movements.iloc[curr_idx]).T, hide_index=True)
 
     # Buttons
     _controversial_buttons(curr_idx, curr_state, n)

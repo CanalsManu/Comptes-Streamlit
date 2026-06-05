@@ -7,7 +7,8 @@ from back.format import (
     weekday_from_date,
     date_str_to_tuple,
     format_import,
-    format_database
+    format_database,
+    show_move_w_calendar
 )
 from back.utils import sort_df_by_date
 ss = st.session_state
@@ -42,7 +43,8 @@ def classify_movements(movements):
     # Movement info
     else:
         curr_move = movements.iloc[curr_idx]
-        _clsf_movement_info(curr_move)
+        # _clsf_movement_info(curr_move)
+        show_move_w_calendar(movements.iloc[curr_idx])
         st.space()
 
         # Add curr_classification info
@@ -55,10 +57,6 @@ def classify_movements(movements):
     with st.container(gap=None, horizontal_alignment='center'):
         # Navigation buttons and progress
         _clsf_nav_buttons(curr_idx, n)
-
-        # if st.button(':yellow-badge[Desa i tanca]', shortcut='esc',
-        #                          type='tertiary'):
-        #     st.rerun()
 
 def _clsf_end_page(movements):
     """
@@ -225,90 +223,6 @@ def _clsf_curr_res_info(curr_move):
                         vertical_alignment='center', horizontal=True)
     cont.markdown(info_str)
 
-
-def _clsf_movement_info(curr_move):
-    move_cols = st.columns(2)
-
-    with move_cols[0]:
-        date = date_str_to_tuple(curr_move['Data'])
-        month_calendar(date[1], date[2], hightlight=date[0])
-
-    with move_cols[1]:
-        cont = st.container(vertical_alignment='center', height='stretch')
-        cont.write(curr_move['Nom'])
-        cont.write(format_import(curr_move['Import']))
-
-
-def month_calendar(month, year, hightlight=None):
-    """Month: int from 1 to 12 (inclusive). highlight (optional) day (int)."""
-    # Formats
-    off_month = ':gray-badge[····]'
-    off_month = ':gray-badge[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]'
-    in_month = ':gray-badge[ {:02} ]'
-    curr_day = ':primary-badge[ {:02} ]'
-    week_name = ':primary-badge[{}]'
-
-    # Set up
-    assert 1 <= month <= 12 
-    month_days = days_in_month(month, year)
-    def write_week(week, sep=''):
-        week.insert(5, '|')
-        st.markdown(sep.join(week), text_alignment='center')
-
-    # Prepare week names
-    names = ['  dl', 'dt', 'dc', 'dj', 'dv', 'ds', 'dg']
-    names = ['DL', 'DT', 'DC', 'DJ', 'DV', 'DS', 'DG']
-    week_names = [week_name.format(d) for d in names]
-
-    # Build first week
-    first_weekday = weekday_from_date((1, month, year))  # mon: 0, sun: 6
-    first_week = [off_month] * first_weekday
-    first_week += [in_month.format(n) for n in range(1, 7 - first_weekday + 1)]
-
-    # Container with multiple markdowns
-    month_cont = st.container(horizontal=False, horizontal_alignment='center',
-                             gap=None, vertical_alignment='center',
-                             width='stretch', border=False)
-    with month_cont:
-
-        # Write header and first week
-        spacing = ' ' * 30
-        st.text(month_name(month).upper() + spacing + str(year), 
-                text_alignment='center')
-        write_week(first_week)
-
-        # Rest of the month
-        for start_day in range(8 - first_weekday, month_days, 7):
-            # Build week
-            days_in_week = min(month_days - start_day, 7)
-            week = [in_month.format(n)
-                    for n in range(start_day, start_day+days_in_week)]
-            week += [off_month] * (7 - days_in_week)
-
-            # If given, highlight day
-            if hightlight is None:
-                pass
-            elif start_day <= hightlight <= start_day + days_in_week - 1:
-                week[hightlight - start_day] = curr_day.format(hightlight)
-
-            write_week(week)
-    
-
-def month_name(month):
-    """month: int from 1 to 12 (inclusive)."""
-    assert 1 <= month <= 12
-    names = ['Gener', 'Febrer', 'Març', 'Abril', 'Maig', 'Juny',
-             'Juliol', 'Agost', 'Setembre', 'Octubre', 'Novembre', 'Decembre']
-    return names[month-1]
-
-
-def days_in_month(month, year):
-    """month: int from 1 to 12 (inclusive)."""
-    assert 1 <= month <= 12
-    if month == 12:
-        return 31
-    return (ddate(year, month+1, 1) - ddate(year, month, 1)).days
-   
 
 def _clsf_show_categories(curr_move):
     """
