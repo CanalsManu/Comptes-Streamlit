@@ -10,11 +10,11 @@ def build_clsf_badges(classification, amount = None):
     """
 
     # Get info
-    if classification is None:
+    if isinstance(classification, str):
+        show_res = classification
+    else:
         assert amount is not None  # amount must be given here
         show_res = 'despeses-' if amount <= 0 else 'ingressos-'
-    else:
-        show_res = classification
 
     # Display info
     badges_md = []

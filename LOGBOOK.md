@@ -229,3 +229,14 @@ TASKS:
     - option to create your own classification tree?
     - modify classification tree?
     - what if classification tree doesn't have ingressos and despesses as first categories?
+
+
+05/06/2026
+- Fixed some bugs, and found some new bugs
+- Last unsolved bug:
+    - when clasifying and jumping to the end page before finishing and clicking the toggle, complaing floa has no attribute split
+    - maybe results is changed?
+    - the thing is that None within a df is not a None so it was not catch
+    - I changed the way I check what clasification is in build badge
+    - but now the issues is that if classfication is None it wants the kwarg amount to decidie if ingressos or despeses
+    - fix it?

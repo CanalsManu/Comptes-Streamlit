@@ -71,6 +71,9 @@ def _clsf_end_page(movements):
     """
     # Set up
     results = ss['classification']['results']
+    print('\n'*5)
+    print(results)
+    print('\n'*5)
     completed = all([_is_completed(res) for res in results])
 
     if completed:
