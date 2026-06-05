@@ -150,6 +150,12 @@ def month_calendar(month, year, hightlight=None):
         spacing = ' ' * 30
         st.text(month_name(month).upper() + spacing + str(year), 
                 text_alignment='center')
+        
+        # If given, highlight day
+        if hightlight is None:
+            pass
+        elif 1 - first_weekday <= hightlight <= 7 - first_weekday:
+            first_week[hightlight - 1 + first_weekday] = curr_day.format(hightlight)
         write_week(first_week)
 
         # Rest of the month
@@ -174,7 +180,7 @@ def days_in_month(month, year):
     assert 1 <= month <= 12
     if month == 12:
         return 31
-    return (ddate(year, month+1, 1) - ddate(year, month, 1)).days
+    return (ddate(year, month+1, 1) - ddate(year, month, 1)).days + 1
    
 
 def month_name(month):
