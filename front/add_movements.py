@@ -84,8 +84,11 @@ new, repeated, controversial = compare_movements(uploaded_movements, db)
 
 # Manage
 # 'manage_controversial' is set in manage_controversial_movements() 
+print('=========')
+print('controbersisll', ss.get('manage_controversial', not controversial.empty))
 if ss.get('manage_controversial', not controversial.empty):
     manage_controversial_movements(controversial)
+    st.stop()
 
 # Update movements
 if 'controversial_select' in ss:
@@ -123,6 +126,7 @@ mask_auto = to_be_clsf['Nom'].isin(list(autocompletable.keys()))
 to_be_auto = to_be_clsf[mask_auto]
 
 # Manage it
+print('autocompelte', ss.get('manage_autocomplete', not to_be_auto.empty))
 if ss.get('manage_autocomplete', not to_be_auto.empty):
     manage_autocomplete(to_be_auto, autocompletable)
 
