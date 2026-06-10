@@ -81,7 +81,7 @@ def _clsf_end_page(movements):
         disabled = False
     else:
         info_text = 'Classificació incompleta. Si us plau, acaba-la per' \
-                    ' continuar).'
+                    ' continuar.'
         disabled = True
 
     # Display after add movements
@@ -364,7 +364,8 @@ def _find_nxt_unclsf():
 
 
 def _clsf_nav_buttons(curr_idx, n):
-    nav_cols = st.columns([1, 3, 1])
+    nav_cols = st.columns([1, 12, 1], border=False, vertical_alignment='center',
+                          gap=None)
 
     def _go_left():
         ss['classification']['curr_idx'] -= 1 

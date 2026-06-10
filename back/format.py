@@ -2,19 +2,22 @@ import streamlit as st
 from datetime import date as ddate
 import pandas as pd
 
-def build_clsf_badges(classification, amount = None):
+def build_clsf_badges(classification, amount=None):
     """
     Get md string to render dashed classification as badges with arrows.
     
-    amount is used when classification is None.
+    amount is used when classification is None. If amount also None return '-'.
     """
 
     # Get info
     if isinstance(classification, str):
         show_res = classification
     else:
-        assert amount is not None  # amount must be given here
-        show_res = 'despeses-' if amount <= 0 else 'ingressos-'
+        # assert amount is not None  # amount must be given here
+        if amount is None:
+            return '--'
+        else:
+            show_res = 'despeses-' if amount <= 0 else 'ingressos-'
 
     # Display info
     badges_md = []

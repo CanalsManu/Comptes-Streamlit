@@ -240,3 +240,8 @@ TASKS:
     - I changed the way I check what clasification is in build badge
     - but now the issues is that if classfication is None it wants the kwarg amount to decidie if ingressos or despeses
     - fix it?
+
+10/06/2026
+- TASK: would be cool to review autocomplete #1 (decide which to autocomplete and which to not)
+    - maybe to my own table (display row by row with toggle as buttons to select)
+- BUG fixed: just return '--' when build_clsf_badges(None, None)
