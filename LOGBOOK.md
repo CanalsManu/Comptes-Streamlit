@@ -202,7 +202,7 @@ TODO:
         2. focused items when enter is unbound are clicked with enter (apparently dosen't apply to toggles)
 
 - BUG FIXED. Lessons learned:
-    1. On blinking and vackground clicks
+    1. On blinking and background clicks
     - background button click (with shortcut) forces rerun
         - dialog not closed automatically (regardless of dismissable)
         - dialog closed based on effects of rerun
@@ -216,7 +216,7 @@ TODO:
     - SOLUTION: have it bound to something (we have it bind to the background one)
 
 TASKS:
-    - format better the controversials
+    - format better the controversials (done)
     - do the autocomplete #2
     - clean homepage (see 03/06)
     - use web for real movements
@@ -245,3 +245,10 @@ TASKS:
 - TASK: would be cool to review autocomplete #1 (decide which to autocomplete and which to not)
     - maybe to my own table (display row by row with toggle as buttons to select)
 - BUG fixed: just return '--' when build_clsf_badges(None, None)
+- PLAN:
+    - get basic functionalities everywhere in order to deploy first draft
+    - includes:
+        - better home page with basic links to other pages
+        - some basic analysis (monthly table and plots)
+            - for future: list with top despeses?
+        - decide how to handle flexible classification tree (now is fixed)

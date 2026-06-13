@@ -10,8 +10,13 @@ import ntpath
 MAX_NAME_LEN = 20
 
     
-def fake_file_uploader(file_name, key, **button_kwargs):
-    """ Show a file uploader containing a file (key: unique element key)."""
+def fake_file_uploader(file_name, key, info_text='', **button_kwargs):
+    """
+    Show a file uploader containing a file (key: unique element key).
+    
+    The file is a button, to which you can pass kargs. Additionally,
+    infot_text can be displayed next to the button (markdown).
+    """
 
     # Container
     st.html(f"<style>{container_style(key)}</style>")
@@ -20,7 +25,6 @@ def fake_file_uploader(file_name, key, **button_kwargs):
 
     # Texts
     button_text = f'{shorten_name(file_name)}'
-    info_text = ':small[:gray[Clica per canviar el fitxer]]'
 
     # Display
     with cont:

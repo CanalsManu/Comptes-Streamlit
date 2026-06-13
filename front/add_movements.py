@@ -55,6 +55,7 @@ if 'uploaded_movements' in ss:
     assert 'uploaded_file_name' in ss
     st.markdown(':small[Fitxer amb els nous moviments a classificar.]')
     fake_file_uploader(ss['uploaded_file_name'], 'uploader_cont',
+                       info_text=':small[:gray[Clica per canviar el fitxer]]',
                        on_click=cleanup_post_discard_file)
 
 # not uploaded file -> show real uploader

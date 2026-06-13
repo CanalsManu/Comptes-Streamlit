@@ -2,23 +2,25 @@ import streamlit as st
 import os
 from back.save_progress_to_file import gather_comptes_in_df
 from back.format import get_start_end_of_series
+from front.pages_format import (
+    homepage_kwargs,
+    database_kwargs,
+    cla_tree_kwargs,
+    analysis_kwargs,
+    add_moves_kwarg
+)
 ss = st.session_state
 
 with st.sidebar:
     # Navigation
-    homepage = st.Page(os.path.join(os.getcwd(), 'front', 'homepage.py'),
-                    default=True, title='Inici')
-    database = st.Page(os.path.join(os.getcwd(), 'front', 'database.py'),
-                    title='Base de dades')
-    cla_tree = st.Page(os.path.join(os.getcwd(), 'front', 'classification_tree.py'),
-                    title='Esquema de classificació')
-    analysis = st.Page(os.path.join(os.getcwd(), 'front', 'analysis.py'),
-                    title='Anàlisi')
-    add_moves = st.Page(os.path.join(os.getcwd(), 'front', 'add_movements.py'),
-                        title='Afegir moviments')
+    homepage = st.Page(**homepage_kwargs)
+    database = st.Page(**database_kwargs)
+    cla_tree = st.Page(**cla_tree_kwargs)
+    analysis = st.Page(**analysis_kwargs)
+    add_moves = st.Page(**add_moves_kwarg)
 
     pg = st.navigation([homepage, database, cla_tree, add_moves, analysis],
-                    position='sidebar')
+                        position='sidebar')
     
     # Download
     with st.sidebar.container(key="sidebar_bottom"):
