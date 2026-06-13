@@ -61,3 +61,12 @@ def tree_to_dashed(tree, prefix=''):
         else:  # continue recursively
             dashed.extend(tree_to_dashed(subtree, prefix + key + '-'))
     return dashed
+
+
+def dashed_to_df(dashed):
+    """
+    Write dashed classification into a pd.Dataframe.
+    
+    Split each dashed element A-...-Z into columns.
+    """
+    return dashed.str.split('-', expand=True)

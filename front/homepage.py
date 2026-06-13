@@ -2,7 +2,8 @@ import streamlit as st
 import pandas as pd
 from back.classification_tree import (
     dashed_to_tree,
-    check_clsf_tree
+    check_clsf_tree,
+    dashed_to_df
 )
 from back.known_movements import get_known_movements
 from back.fake_file_uploader import fake_file_uploader
@@ -28,6 +29,8 @@ def init_dialog():
 
         ss['db'] = db
         ss['known_movements'] = known_movements
+        ss['clsf_dashed'] = clsf
+        ss['clsf_df'] = dashed_to_df(clsf)
         ss['clsf_tree'] = dashed_to_tree(clsf)
         check_clsf_tree(ss['clsf_tree'])
 

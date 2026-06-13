@@ -252,3 +252,7 @@ TASKS:
         - some basic analysis (monthly table and plots)
             - for future: list with top despeses?
         - decide how to handle flexible classification tree (now is fixed)
+
+13/06/2026
+- Homepage improved
+- Treemap for classificatoin tree with plotly

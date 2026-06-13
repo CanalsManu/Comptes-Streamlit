@@ -74,7 +74,7 @@ def get_start_end_of_series(series):
 
 
 def format_dataframe(df, columns, formats):
-    """Iteratiely apply function in formats to column name in columns."""
+    """Iteratively apply function in formats to column name in columns."""
     assert len(columns) == len(formats)
 
     formated = df.copy()
